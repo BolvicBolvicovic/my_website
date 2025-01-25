@@ -1,13 +1,26 @@
-<section class="flex flex-col items-center justify-center w-full px-8 pt-14">
-  <img src="/assets/me.jpeg" class="w-[300px] lg:w-[full/2] rounded-full mb-8">
-  <section class="w-[300px] md:w-[600px] lg:w-[900px] mx-auto text-center">
+<section class="flex flex-col items-center justify-center gap-y-8 w-full min-h-screen">
+  <img src="/assets/me.jpeg" class="w-[200px] md:w-[300px] lg:w-[full/2] rounded-full mb-8">
+  <section class="w-[300px] md:w-[600px] lg:w-[900px] mx-auto flex flex-col gap-y-4 text-center sm:text-left">
     <h1 class="text-xl lg:text-4xl font-bold mb-6">Hi, I am Victor 🚀</h1>
     <h1 class="text-l">
-      I am a software engineer, passionate about the intricacy of computers.<br/>
-      I spend most of my free time learning new concepts or new languages.<br/>
-      Else I read books. <br/>
-      Anna Karenina, The Brothers Karamazov or The Master and Margarita.
+      I am a software engineer, passionate about the intricacy of computers.
+      I spend most of my free time learning new concepts or new languages.
+      Else I read books.
+      The Old Man and the Sea, The Brothers Karamazov and
+      The Master and Margarita are my favorite books.
     </h1>
   </section>
-
+  <section>
+    <h1 class="text-l font-bold text-center">Skills</h1>
+    <div class="grid grid-cols-7 items-center gap-x-2 gap-y-4">
+      <app-skills
+        *ngFor="let skill of skills"
+        [skills]="skill"
+      ></app-skills>
+    </div>
+    <div id="projects"></div>
+  </section>
+</section>
+<section class="pt-64 min-h-screen">
+  <h1 class="text-l font-bold text-center">My Projects</h1>
 </section>
