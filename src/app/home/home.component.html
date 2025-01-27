@@ -10,29 +10,30 @@
       The Master and Margarita are some of my favorites.
     </h1>
   </section>
-  <section>
+  <section class="flex flex-col gap-y-2">
     <h1 class="text-l font-bold text-center">Skills</h1>
-    <div class="grid grid-cols-7 items-center gap-x-2 gap-y-4">
+    <div class="grid grid-cols-6 sm:grid-cols-8 items-center gap-x-2 gap-y-4">
       <app-skills
         *ngFor="let skill of skillsList"
         [skills]="skill"
       ></app-skills>
     </div>
-    <div id="projects"></div>
   </section>
 </section>
-<section class="pt-64 min-h-screen flex flex-col items-center gap-y-4">
+<section id="projects" class="scroll-mt-32 min-h-screen flex flex-col items-center gap-y-8">
   <h1 class="text-l font-bold text-center">My Projects</h1>
-  <div class="grid grid-cols-1 sm:grid-cols-5 items-center gap-4">
-    <app-project-preview 
-      *ngFor="let projectPreview of projectPreviewList"
-      [projectPreview]="projectPreview"
-    ></app-project-preview>
-  </div>
-  <div class="grid grid-cols-1 items-center gap-4 pt-32">
-    <app-project 
-      *ngFor="let projectPreview of projectPreviewList"
-      [projectPreview]="projectPreview"
-    ></app-project>
+  <div class="flex flex-col gap-y-40 items-center">
+    <div class="grid grid-cols-1 sm:grid-cols-5 items-center gap-4">
+      <app-project-preview 
+        *ngFor="let projectPreview of projectPreviewList"
+        [projectPreview]="projectPreview"
+      ></app-project-preview>
+    </div>
+    <div class="flex flex-col items-center gap-16">
+      <app-project 
+        *ngFor="let projectPreview of projectPreviewList"
+        [projectPreview]="projectPreview"
+      ></app-project>
+    </div>
   </div>
 </section>

@@ -47,6 +47,16 @@ export class SkillsService {
       logo_src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Typescript_logo_2020.svg/2048px-Typescript_logo_2020.svg.png",
     },
     {
+      name: "TailwindCSS",
+      url: "https://tailwindcss.com/",
+      logo_src: "https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg",
+    },
+    {
+      name: "Angular",
+      url: "https://angular.dev/",
+      logo_src: "https://yt3.googleusercontent.com/L7fPOHO5TwVC_qz78Yo8P0MuJAB8I4FdQmOY2HSW7Z4_AFJZgAHzJCKQXo7ek1sy0pj0dIzM2Xg=s900-c-k-c0x00ffffff-no-rj",
+    },
+    {
       name: "Docker",
       url: "https://www.docker.com/",
       logo_src: "/assets/docker_logo.png",

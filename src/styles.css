@@ -22,6 +22,7 @@ button.primary {
   border-radius: 8px;
 }
 
-html {
+html {    
+  scroll-margin-top: 77px;
   scroll-behavior: smooth;
 }
