@@ -75,7 +75,7 @@ export class ProjectPreviewService {
       id: "ft_transcendence",
       name: "ft_transcendence",
       url: "https://github.com/Bonk-Corporation/ft_transcendence",
-      img: "/assets/transcendence.png",
+      img: "./assets/transcendence.png",
       description: "The goal of this project was to make a single page application displaying at least a Pong game. But we decided to get more ambitious... ",
       keywords: ["SPA", "web", "team of six", "React", "Django", "Rust", "Godot"],
     },
@@ -91,7 +91,7 @@ export class ProjectPreviewService {
       id: "snow-crash",
       name: "snow-crash",
       url: "",
-      img: "/assets/snowcrash.png",
+      img: "./assets/snowcrash.png",
       description : "This project is an introduction to cyber security",
       keywords: ["cybersecurity", "42"]
     },

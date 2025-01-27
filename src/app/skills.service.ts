@@ -29,17 +29,17 @@ export class SkillsService {
     {
       name: "NASM",
       url: "https://www.nasm.us/",
-      logo_src: "/assets/nasm_logo.png"
+      logo_src: "./assets/nasm_logo.png"
     },
     {
       name: "oCaml",
       url: "https://ocaml.org/",
-      logo_src: "/assets/ocaml_logo.png",
+      logo_src: "./assets/ocaml_logo.png",
     },
     {
       name: "Python",
       url: "https://www.python.org/",
-      logo_src: "/assets/python_logo.png",
+      logo_src: "./assets/python_logo.png",
     },
     {
       name: "TypeScript",
@@ -59,7 +59,7 @@ export class SkillsService {
     {
       name: "Docker",
       url: "https://www.docker.com/",
-      logo_src: "/assets/docker_logo.png",
+      logo_src: "./assets/docker_logo.png",
     },
     {
       name: "Git",
@@ -69,7 +69,7 @@ export class SkillsService {
     {
       name: "Bash",
       url: "https://www.gnu.org/software/bash/",
-      logo_src: "/assets/bash_logo.png"
+      logo_src: "./assets/bash_logo.png"
     },
     {
       name: "Oracle VirtualBox",
