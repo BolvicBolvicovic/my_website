@@ -127,6 +127,14 @@ export class ProjectPreviewService {
       description: "bluebeam is a SaaS platform bridging market research and business intelligence. It empowers you to conduct unlimited industry analyses by scanning websites of your choice against your own custom criteria, delivering tailored insights for smarter decision-making. It is entirely built with Go (Gin and the basic templating system) and calls to AI and Cloud APIs with SDKs for Python. It is launch with Docker on an EC2 compute platform of aws Cloud and is protected Cloudflare.",
       keywords: ["SaaS", "AI", "Go", "SDK", "market research", "business intelligence", "aws cloud"],
     },
+    {
+      id: "red-tetris",
+      name: "red-tetris",
+      url: "https://github.com/BolvicBolvicovic/red_tetris",
+      img: "https://github.com/BolvicBolvicovic/red_tetris/blob/main/assets/red-tetris.png?raw=true",
+      description: "You have access to two game modes. A mode \"solo\" and a mode \"multiplayer\". The solo mode is the classic Tetris. A terrain consists of 10 columns and 20 lines. You score for every piece that you place and for every line that you complete. The multiplayer mode is based on the same basics but is played between several players. Each player has his own playing field, all players undergo the same series of pieces. As soon as a player destroys lines on his ground, the opposing players receive n - 1 lines in penalty, then indestructible, which fit at the bottom of their playground. Each player can graphically observe the specter of their opponents land. A spectrum indicates a current terrain without its current piece. As soon as the terrain is updated, (when the current piece is fixed to the terrain), all opponents must visualize the evolution of their spectrum.",
+      keywords: ["42", "TypeScript", "FullStack", "Tetris"]
+    },
   ];
   
   getProjectPreviews(): ProjectPreview[] {
