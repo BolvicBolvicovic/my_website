@@ -32,11 +32,6 @@ export class SkillsService {
       logo_src: "./assets/nasm_logo.png"
     },
     {
-      name: "oCaml",
-      url: "https://ocaml.org/",
-      logo_src: "./assets/ocaml_logo.png",
-    },
-    {
       name: "Python",
       url: "https://www.python.org/",
       logo_src: "./assets/python_logo.png",
@@ -55,6 +50,21 @@ export class SkillsService {
       name: "Angular",
       url: "https://angular.dev/",
       logo_src: "https://yt3.googleusercontent.com/L7fPOHO5TwVC_qz78Yo8P0MuJAB8I4FdQmOY2HSW7Z4_AFJZgAHzJCKQXo7ek1sy0pj0dIzM2Xg=s900-c-k-c0x00ffffff-no-rj",
+    },
+    {
+      name: "oCaml",
+      url: "https://ocaml.org/",
+      logo_src: "./assets/ocaml_logo.png",
+    },
+    {
+      name: "Elixir",
+      url: "https://elixir-lang.org/",
+      logo_src: "./assets/elixir.png",
+    },
+    {
+      name: "Phoenix",
+      url: "https://www.phoenixframework.org/",
+      logo_src: "./assets/phoenix.png",
     },
     {
       name: "Docker",

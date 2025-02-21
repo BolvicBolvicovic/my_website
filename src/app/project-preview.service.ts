@@ -135,6 +135,14 @@ export class ProjectPreviewService {
       description: "The objective of this project is to develop a networked multiplayer tetris game from a stack of software exclusively Full Stack TypeScript. You have access to two game modes. A mode \"solo\" and a mode \"multiplayer\". The solo mode is the classic Tetris. You score for every piece that you place and for every line that you complete. The multiplayer mode is based on the same basics but is played between several players. Each player has his own playing field, all players undergo the same series of pieces. As soon as a player destroys lines on his ground, the opposing players receive n - 1 lines in penalty, then indestructible, which fit at the bottom of their playground. Each player can graphically observe the specter of their opponents land. A spectrum indicates a current terrain without its current piece. As soon as the terrain is updated, (when the current piece is fixed to the terrain), all opponents visualize the evolution of their spectrum.",
       keywords: ["42", "TypeScript", "FullStack", "Tetris"]
     },
+    {
+      id: "sample_app",
+      name: "SampleApp",
+      url: "https://thephoenixtutorial.org/book/ch1_from_zero_to_deploy",
+      img: "https://github.com/BolvicBolvicovic/sample_app/blob/main/assets/images/home.png?raw=true",
+      description: "This app has been developped by following the book 'Phoenix Tutorial (Phoenix 1.6): Learn Web Development with Phoenix' and is my first application with Elixir and Phoenix. Even if it is 'just' a sample app, as I spent quite some time on it, learnt a fair share of elixir and had a lot of fun while doing so, I decided to mention it in my portfolio. I strongly recommend to read the book even if the version of Phoenix is older. This part of the tutorial focuses on developing a single large real sample application (called sample_app), writing all the code from scratch. I developed the sample app using a combination of mockups, test-driven development (TDD), and integration tests. I started by creating static pages and then added a little dynamic content. Then I completed the foundation for the sample application by making a site layout, a user data model, and a full registration and authentication system. Finally, I’ll add microblogging and social features to make a working example site.",
+      keywords: ["Phoenix", "Elixir", "First application"],
+    },
   ];
   
   getProjectPreviews(): ProjectPreview[] {
