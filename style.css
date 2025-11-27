@@ -3,7 +3,7 @@ html, body {
 	font-size: 16px;
 	color: white;
 	background-color: #111111;
-	border: 2px solid #333333;
+	border: 1px solid #333333;
 	margin: 0;
 	padding: 0;
 	width: 100%;
@@ -11,13 +11,14 @@ html, body {
 	overflow: hidden;
 }
 
-#terminal {
+#terminal, #reader {
 	padding: 10px;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
 	text-align: left;
+	white-space: pre;
 }
 
 .input-line {
@@ -25,11 +26,9 @@ html, body {
 	align-items: center;
 }
 
-#input {
+#input, #reader-input {
 	outline: none;
-	white-space: pre;
 	flex: 1;
-	padding-left: 10px;
 	caret-shape: block;
 	caret-color: white;
 }
