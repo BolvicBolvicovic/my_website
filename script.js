@@ -15,14 +15,13 @@ const	FS = Object.freeze({
 	files: ["whoami"],
 	dir: [
 		{
-			pwd: "portfolio",
-			files: [],
-			dir: []
-			
-		},
-		{
 			pwd: "notes",
 			files: ["branchless"],
+			dir: []
+		},
+		{
+			pwd: "portfolio",
+			files: [],
 			dir: []
 		}
 	]
@@ -75,14 +74,16 @@ function	build_line_tag() {
  * On error: string
  * */
 function	get_dir(path, dir) {
-	const	first_dir_from_path = path.split("/")[0];
+	const	path_split	= path.split("/");
+	const	first_dir	= path_split[0];
 
-	if (first_dir_from_path == path)
+	if (first_dir == "")
 		return dir; 
 	
-	for (let i = 0; i < dir.dir.length; i++)
-		if (dir.dir[i].pwd == first_dir_from_path)
-			return get_dir(path.trimStart(first_dir_from_path + "/"), dir.dir[i]);
+	for (let i = 0; i < dir.dir.length; i++) {
+		if (dir.dir[i].pwd == first_dir)
+			return get_dir(path_split.slice(1).join("/"), dir.dir[i]);
+	}
 
 	return unknown_directory;
 }
@@ -94,13 +95,16 @@ function	get_dir(path, dir) {
 function	run_command(line) {
 	const	split_line	= line.split(" ");
 	const	command		= split_line[0];
-	const	args		= split_line.slice(1).concat(" ");
+	const	args		= split_line.slice(1).join(" ");
 	
 	switch (command) {
 		case "ls":
-			return ls(get_dir(current_dir, args));
+			return ls(get_dir(args, current_dir));
 		case "cd":
-			return ls(get_dir(current_dir, args));
+			if (args == "") return cd(FS);
+			return cd(get_dir(args, current_dir));
+		case "clear":
+			return clear();
 		default:
 			return unknown_command;
 	}
@@ -122,7 +126,20 @@ function	place_caret_at_end(node) {
 	selection.addRange(range);
 }
 
-/* COMMANDS */
+/* COMMANDS 
+ * 
+ * Note: All commands function MUST return a string.
+ * That string is added to the stdout.
+ * */
+
+/* Name: clear
+ * Description: clears the terminal from all previous inputs.
+ * Usage: clear
+ * */
+function	clear() {
+	output.innerHTML = "";
+	return "";
+}
 
 /* Name: ls
  * Description: list files and folders in the chosen directory. Defaults to current_dir.
@@ -132,13 +149,17 @@ function	ls(dir) {
 	if (dir == unknown_directory)
 		return unknown_directory;
 
-	let	fs_list = dir.files;
+	let	fs_list = [...dir.files];
 
-	for (let i; i < dir.dir.length; i++) {
-		fs_list += dir.dir[i].pwd;
+	for (let i = 0; i < dir.dir.length; i++) {
+		const	colored_dir = `<span style="color: #7eb3d4;">${dir.dir[i].pwd}</span>`;
+		fs_list.push(colored_dir);
 	}
+	
+	// TODO: find a way to make the color work with the sort.
+	// fs_list.sort();
 
-	return fs_list;
+	return fs_list.join(" ");
 }
 
 /* Name: cd
@@ -149,15 +170,15 @@ function	cd(dir) {
 	if (dir == unknown_directory)
 		return unknown_directory;
 
-	current_dir = dir;
-	build_line_tag();
+	current_dir			= dir;
+	input_line_tag.textContent	= build_line_tag();
 
 	return "";
 }
 
 /* INIT */
-input_line_tag.textContent		= build_line_tag();
 output_welcome_message.textContent	= welcome_message;
+input_line_tag.textContent		= build_line_tag();
 
 terminal.addEventListener("click", () => input.focus());
 input.focus();
@@ -176,7 +197,7 @@ input.addEventListener("keydown", (e) => {
 
 			history.push(command);
 			history_index = history.length;
-			response_line.textContent = run_command(command);
+			response_line.innerHTML = run_command(command);
 			output.appendChild(response_line);
 			input.innerText = "";
 		}

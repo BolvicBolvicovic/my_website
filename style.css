@@ -2,7 +2,7 @@ html, body {
 	font-family: JetBrains Mono, monospace;
 	font-size: 16px;
 	color: white;
-	background-color: black;
+	background-color: #111111;
 	border: 2px solid #333333;
 	margin: 0;
 	padding: 0;
@@ -29,5 +29,7 @@ html, body {
 	outline: none;
 	white-space: pre;
 	flex: 1;
-	min-width: 10px;
+	padding-left: 10px;
+	caret-shape: block;
+	caret-color: white;
 }
