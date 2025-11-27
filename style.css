@@ -1,0 +1,33 @@
+html, body {
+	font-family: JetBrains Mono, monospace;
+	font-size: 16px;
+	color: white;
+	background-color: black;
+	border: 2px solid #333333;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+#terminal {
+	padding: 10px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	text-align: left;
+}
+
+.input-line {
+	display: flex;
+	align-items: center;
+}
+
+#input {
+	outline: none;
+	white-space: pre;
+	flex: 1;
+	min-width: 10px;
+}
