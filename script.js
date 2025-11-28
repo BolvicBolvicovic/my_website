@@ -1,5 +1,78 @@
+/* CLASSES */
+// TODO: Document the RingBuffer
+class	RingBuffer {
+	constructor(size = 500) {
+		this.size = size;
+		this.buffer = new Array(size);
+		this.head = 0;
+		this.count = 0;
+		this.readHead = 0;
+	}
+
+	static fromArray(arr, size = 500) {
+		let	ringBuffer = new RingBuffer(size);
+
+		ringBuffer.count = arr.length;
+
+		for (let i = 0; i < arr.length; i++) {
+			ringBuffer.pushBack(arr[i]);
+		}
+
+		return ringBuffer;
+	}
+
+	pushBack(value) {
+		this.buffer[this.head] = value;
+		this.head = (this.head + 1) % this.size;
+		this.readHead = this.head;
+		if (this.count < this.size) this.count++;
+	}
+
+	toArray() {
+		let	result = [];
+
+		for (let i = 0; i < this.count; i++) {
+			const index = (this.head - this.count + i + this.size) % this.size;
+			result.push(this.buffer[index]);
+		}
+
+		return result;
+	}
+
+	clear() {
+		this.head = 0;
+		this.count = 0;
+		this.readHead = 0;
+	}
+
+	readPrevious() {
+		if (!this.count) return null;
+
+		const	previous = (this.readHead - 1 + this.size) % this.size;
+		const	oldest = (this.head - this.count + this.size) % this.size;
+
+		if (previous >= this.count || previous === (oldest - 1 + this.size) % this.size)
+			return null;
+
+		this.readHead = previous;
+
+		return this.buffer[this.readHead];
+	}
+
+	readNext() {
+		if (!this.count || this.readHead === this.head) return null;
+			
+		const	next = (this.readHead + 1) % this.size;
+
+		this.readHead = next;
+
+		if (next === this.head) return null;
+
+		return this.buffer[this.readHead];
+	}
+}
+
 /* CONSTANTS */
-const	reader_base_inner_html = `<span style="position: fixed;bottom: 0;left: 0;width: 100%;padding: 10px;background-color: #111111;border-top: 1px solid #333333;">press '<span style="color: red;">q</span>' to <span style="color: red;">quit</span> (go back)</span>`;
 const	dusty_blue = "#7eb3d4";
 const	yellow = "#f1fa8c";
 const	green = "#50fa7b";
@@ -12,10 +85,10 @@ const	welcome_message = `
 
 
 Welcome to my interactive portfolio/blog.
-If you do not have the time to interact, click <a href="/whoami" style="color: ${green};">here</a> to see who I am.
+If you do not have the time to interact, click <a href="#whoami" style="color: ${green};">here</a> to see who I am.
 
 <span style="color: ${green};">How to use:</span>
-Type <span style="color: ${yellow};">commands</span> (the yellow words bellow) below and press Enter to explore.
+Type a <span style="color: ${yellow};">command</span> (the yellow words below) and press Enter to explore.
 
 <span style="color: ${green};">Quick start:</span>
 	<span style="color: ${yellow};">read whoami</span>   Learn about me
@@ -27,27 +100,6 @@ Type <span style="color: ${yellow};">commands</span> (the yellow words bellow) b
 Type <span style="color: ${yellow};">help</span> anytime to see available commands.
 Type <span style="color: ${yellow};">help [second command]</span> for detailed information about a specific command.
 `;
-
-const	file_whoami = `
-<h1>WHOAMI</h1>
-Hi, I'm Victor 🚀
-
-I'm a software engineer with a deep fascination for how computers work — from the smallest embedded systems to complex kernels.
-
-<span style="color: ${green};">Background</span>
-I specialized in Kernel and System programming at 42, and I'm currently expanding my expertise in Embedded Systems at Hermods in Sweden, where I'm also learning Swedish.
-
-<span style="color: ${green};">What drives me</span>
-I spend most of my time exploring new concepts and building software. When I'm not coding, you'll find me with a book — some favorites include The Old Man and the Sea, The Brothers Karamazov, and The Master and Margarita.
-
-<span style="color: ${green};">What I'm working on</span>
-Right now, I'm focused on [mention current project or learning goal].
-
-<span style="color: ${dusty_blue};">Want to connect?</span>
-Check out my projects in the portfolio folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
-You can mail me at victor.cornille@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcornille"/>LinkedIn</a>.
-`;
-const	file_notes_branchless = ``;
 
 const	FS = Object.freeze({
 	pwd: "/",
@@ -69,26 +121,75 @@ const	FS = Object.freeze({
 // TODO: delete this for prod
 document.getElementById("stylesheet").href = "style.css?v=" + new Date().getTime();
 
-const	reader				= document.getElementById("reader");
-const	terminal			= document.getElementById("terminal");
-const	output				= document.getElementById("output");
-const	output_welcome_message		= document.getElementById("output-welcome-message");
-const	input				= document.getElementById("input");
-const	input_line_tag			= document.getElementById("input-line-tag");
+const	reader					= document.getElementById("reader");
+const	reader_output				= document.getElementById("reader-output");
+const	terminal				= document.getElementById("terminal");
+const	terminal_output				= document.getElementById("terminal-output");
+const	terminal_input_output_welcome_message	= document.getElementById("terminal-output-welcome-message");
+const	terminal_input				= document.getElementById("terminal-input");
+const	terminal_input_prompt			= document.getElementById("terminal-input-prompt");
+
+/* FILES */
+const	file_whoami = `
+<h1>WHOAMI</h1>
+Hi, I'm Victor 🚀
+
+I'm a software engineer with a deep fascination for how computers work — from the smallest embedded systems to complex kernels.
+
+<span style="color: ${green};">Background: atypical</span>
+I specialized in Kernel and System programming at 42, and I'm currently expanding my expertise in Embedded Systems at Hermods in Sweden, where I'm also learning Swedish.
+Before learing how to code, I did various things.
+In highschool, I was mainly studying science but I bifurcated right at the start of my college years. I wanted to become a writer. I went to an intensive course for literature called "prépa". Then I went to la Sorbonne University to continue in the field of literature. I found out that I did not like the environment and instead I started to work in a museum's bookshop.
+As I was missing out logical thinking from my time in highschool, I dedided to give coding a shot and found out there was a 42 school opening in Le Havre: I moved there and this is how my journey as a software developer started.
+
+<span style="color: ${green};">What drives me: curiosity and passion</span>
+I spend most of my time exploring new concepts and building software. When I'm not coding, you'll find me with a book — some favorites include The Old Man and the Sea, The Brothers Karamazov, and The Master and Margarita.
+
+<span style="color: ${green};">What I'm working on: embedded systems</span>
+Right now, I'm focused on understanding the intrinsect of IoT by learning how the software interacts with the WiFi related hardware and becoming fluent in Swedish.
+
+<span style="color: ${green};">Why am I in Sweden: </span><span style="color: red;">Love</span>
+
+<span style="color: ${dusty_blue};">Want to connect?</span>
+Check out my projects in the portfolio folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
+You can mail me at victor.cornille@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcornille"/>LinkedIn</a>.
+`;
+const	file_notes_branchless = `
+<h1>Branchless C code</h1>
+Link to the <a href="https://github.com/BolvicBolvicovic/branchless">project</a>.
+`;
+
+const	saved_history		= localStorage.getItem("history");
+const	saved_hints_enabled	= localStorage.getItem("hints_enabled");
 
 /* VARIABLES */
-let	current_dir			= FS;
-let	history				= [];
-let	history_index			= -1;
-let	reading				= false;
-let	hints_enabled			= true;
+let	current_dir		= FS;
+let	history			= saved_history
+					? RingBuffer.fromArray(JSON.parse(saved_history))
+					: new RingBuffer();
+let	reading			= false;
+let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
 
 /* ERRORS */
 const unknown_directory	= "Error: Unknown directory. Maybe you misstyped the directory name.";
 const unknown_command	= "Error: Unknown command. Maybe you misstyped the command.";
-const unknown_file	= "Error: Unknown file. Maybe you misstyped the file name.";
+const unknown_file	= "Error: Unknown file. Maybe you misstyped the file name or its path.";
 
 /* HELPERS */
+
+/* Name: handle_path_hash
+ * Description: handles the path's hash at initial load and on back/forward buttons.
+ * Return type: none
+ * */
+function	handle_path_hash() {
+	const	hash = window.location.hash;
+	
+	if (hash) {
+		const	no_hash_hash	= hash.replace("#", "");
+		const	path		= no_hash_hash.split("/");
+		open_reader(get_file(path), no_hash_hash);
+	}
+}
 
 /* Name: build_line_tag
  * Description: builds the tag for the start of a line based on the current_dir.pwd.
@@ -107,15 +208,14 @@ function	build_line_tag() {
  * On error: string
  * */
 function	get_dir(path, dir) {
-	const	path_split	= path.split("/");
-	const	first_dir	= path_split[0];
-
-	if (first_dir == "")
+	if (path.length === 0)
 		return dir; 
+	
+	const	first_dir	= path[0];
 	
 	for (let i = 0; i < dir.dir.length; i++) {
 		if (dir.dir[i].pwd == first_dir)
-			return get_dir(path_split.slice(1).join("/"), dir.dir[i]);
+			return get_dir(path.slice(1), dir.dir[i]);
 	}
 
 	return unknown_directory;
@@ -126,8 +226,14 @@ function	get_dir(path, dir) {
  * Return type: string
  * */
 function	get_file(path) {
-	// TODO: enforce this so that the path has to be correct too.
-	const	file = path.split("/").pop();
+	const	file = path.pop();
+	const	dir = get_dir(path, current_dir);
+
+	if (dir == unknown_directory)
+		return unknown_file;
+
+	if (!dir.files.includes(file))
+		return unknown_file;
 
 	switch (file) {
 		case "branchless":
@@ -147,18 +253,22 @@ function	run_command(line) {
 	const	split_line	= line.split(" ");
 	const	command		= split_line[0];
 	const	args		= split_line.slice(1).join(" ");
+	const	path		= args.split("/");
 	
 	switch (command) {
+		case "clear_cache":
+			return clear_cache();
 		case "latest":
 			return latest();
 		case "read":
-			return open_reader(get_file(args))
+			return open_reader(get_file(path), args)
 		case "ls":
-			return ls(get_dir(args, current_dir));
+			if (args == "") return ls(current_dir);
+			return ls(get_dir(path, current_dir));
 		case "cd":
 			if (args == "") return cd(FS);
-			if (args.startsWith("/")) return cd(get_dir(args, FS));
-			return cd(get_dir(args, current_dir));
+			if (args.startsWith("/")) return cd(get_dir(path, FS));
+			return cd(get_dir(path, current_dir));
 		case "clear":
 			return clear();
 		case "help":
@@ -168,14 +278,6 @@ function	run_command(line) {
 		default:
 			return unknown_command;
 	}
-}
-
-/* Name: search
- * Description: search a pattern in the reader's file.
- * Return type: string
- * */
-function	search(pattern) {
-	return "TODO";
 }
 
 /* Name: place_caret_at_end
@@ -200,12 +302,28 @@ function	place_caret_at_end(node) {
  * That string is added to the stdout.
  * */
 
+/* Name: clear_cache
+ * Description: clears the history and the toggle_hints (enabling it).
+ * Usage: clear_cache
+ * */
+function	clear_cache() {
+	history.clear();
+	hints_enabled = true;
+	localStorage.clear();
+
+	return `Hint: You have cleared the cache.
+Hints are <span style="color: ${green};">enabled</span>.
+If you arrow up, you will not be able to see your previous commands.`;
+}
+
 /* Name: toggle_hints
  * Description: toggle hints and prints an explicit message concerning the new state.
  * Usage: toggle_hints
  * */
 function	toggle_hints() {
 	hints_enabled = !hints_enabled;
+
+	localStorage.setItem("hints_enabled", hints_enabled ? "1": "0");
 
 	if (hints_enabled) {
 		return `Hints are now <span style="color: ${green};">enabled</span>.`;
@@ -219,10 +337,10 @@ function	toggle_hints() {
  * Usage: clear
  * */
 function	clear() {
-	output.innerHTML = "";
+	terminal_output.innerHTML = "";
 
 	if (hints_enabled) {
-		return "Hint: You have cleared the terminal. You cannot scroll back. If you wish to see the welcom message, reload the page.";
+		return "\nHint: You have cleared the terminal. You cannot scroll back. If you wish to see the welcome message, reload the page.";
 	}
 
 	return "";
@@ -245,7 +363,7 @@ function	ls(dir) {
 	
 	// TODO: find a way to make the color work with the sort.
 	// fs_list.sort();
-	if (toggle_hints)
+	if (hints_enabled)
 		return fs_list.join(" ") + `
 
 Hint: You have listed the content of <span style="color: ${dusty_blue};">${dir.pwd}</span>.
@@ -265,13 +383,13 @@ function	cd(dir) {
 	if (dir == unknown_directory)
 		return unknown_directory;
 
-	current_dir			= dir;
-	input_line_tag.textContent	= build_line_tag();
+	current_dir = dir;
+	terminal_input_prompt.textContent = build_line_tag();
 	
 	if (hints_enabled)
 		return `
 Hint: You have moved to <span style="color: ${dusty_blue};">${dir.pwd}</span>.
-You can see the current folder you are in by looking at the last word of ${input_line_tag.textContent}.
+You can see the current folder you are in by looking at the last word of ${terminal_input_prompt.textContent}.
 You can choose to list everything in the folder by typing <span style="color: ${yellow};">ls</span> or you can read/open a file by typing <span style="color: ${yellow};">read name_of_the_file</span>.
 Do not forget to hit enter to execute the command!
  `;
@@ -283,22 +401,21 @@ Do not forget to hit enter to execute the command!
  * Description: opens a file in a reader.
  * In the reader, you can:
  * 	- scroll with the mouse, the pad or the arrows up and down.
- * 	- search for an open file by hitting the "/" button and then type the word.
- * 	Press enter to 'goto' the next found word.
- * 	Press ESC to quit the search mode.
  * 	- quit by hitting q.
  * Usage: read <FILE>
  * */
-function	open_reader(file) {
+function	open_reader(file, path) {
 	if (file === unknown_file)
 		return unknown_file;
 
-	input.contentEditable = false;
-	reader.innerHTML = `<div>${file}</div>` + reader_base_inner_html;
+	terminal_input.contentEditable = false;
+	reader_output.innerHTML = file;
 	reading = true;
 	terminal.style.display = "none";
 	reader.style.display = "";
 	reader.focus();
+
+	window.location.hash = path;
 	
 	return "";
 }
@@ -310,9 +427,10 @@ function	open_reader(file) {
 function	close_reader() {
 	reader.style.display = "none";
 	terminal.style.display = "";
-	reader.innerHTML = "";
-	input.contentEditable = true;
-	input.focus();
+	reader_output.innerHTML = "";
+	terminal_input.contentEditable = true;
+	terminal_input.focus();
+	window.location.hash = "";
 }
 
 
@@ -337,12 +455,16 @@ function	latest() {
  * */
 function	help(arg) {
 	switch (arg) {
+		case "clear_cache":
+			return `/* Name: clear_cache
+ * Description: clears the history and the toggle_hints (enabling it).
+ * Usage: clear_cache
+ * */`;
 		case "toggle_hints":
 			return `/* Name: toggle_hints
  * Description: toggle hints and prints an explicit message concerning the new state.
  * Usage: toggle_hints
- * */
-			`;
+ * */`;
 		case "ls":
 			return `/* Name: ls
  * Description: prints the list of all files and folders in the chosen directory.
@@ -369,9 +491,6 @@ function	help(arg) {
  * Description: opens a file in a reader.
  * In the reader, you can:
  * 	- scroll with the mouse, the pad or the arrows up and down.
- * 	- search for an open file by hitting the "/" button and then type the word.
- * 	Press enter to 'goto' the next found word.
- * 	Press ESC to quit the search mode.
  * 	- quit by hitting q.
  * Usage: read [FILE]
  * */`;
@@ -392,8 +511,11 @@ function	help(arg) {
 }
 
 /* INIT */
-output_welcome_message.innerHTML	= welcome_message;
-input_line_tag.textContent		= build_line_tag();
+terminal_input_output_welcome_message.innerHTML	= welcome_message;
+terminal_input_prompt.textContent		= build_line_tag();
+
+window.addEventListener("DOMContentLoaded", handle_path_hash);
+window.addEventListener("hashchange", handle_path_hash);
 
 reader.addEventListener("click", () => {
 	const	selection = window.getSelection();
@@ -406,34 +528,30 @@ terminal.addEventListener("click", (e) => {
 	const	selection = window.getSelection();
 
 	if (selection.toString().length === 0 && !reading)
-		input.focus();
-
-	if (e.target.matches('a[href="/whoami"]')) {
-		e.preventDefault();
-		open_reader(file_whoami);
-	}
+		terminal_input.focus();
 });
 
-input.focus();
+terminal_input.focus();
 
-input.addEventListener("keydown", (e) => {
+terminal_input.addEventListener("keydown", (e) => {
 	if (e.key === "Enter") {
 		e.preventDefault();
 
-		const	command		= input.innerText.trim();
+		const	command		= terminal_input.innerText.trim();
 		const	command_line	= document.createElement("div");
 
-		command_line.textContent= input_line_tag.textContent + command; 
-		output.appendChild(command_line);
+		command_line.textContent= terminal_input_prompt.textContent + command; 
+		terminal_output.appendChild(command_line);
 
 		if (command) {
 			const	response_line	= document.createElement("div");
 
 			history.push(command);
-			history_index = history.length;
 			response_line.innerHTML = run_command(command);
-			output.appendChild(response_line);
-			input.innerText = "";
+			terminal_output.appendChild(response_line);
+			terminal_input.innerText = "";
+
+			localStorage.setItem("history", JSON.stringify(history.toArray()));
 		}
 		terminal.scrollTop = terminal.scrollHeight;
 	}
@@ -441,25 +559,26 @@ input.addEventListener("keydown", (e) => {
 	if (e.key === "ArrowUp") {
 		e.preventDefault();
 
-		if (history_index > 0) {
-			history_index--;
-			input.innerText = history[history_index]
-			place_caret_at_end(input);
+		const	previous_command = history.readPrevious();
+
+		if (previous_command !== null) {
+			terminal_input.innerText = previous_command;
+			place_caret_at_end(terminal_input);
 		}
 	}
 
 	if (e.key === "ArrowDown") {
 		e.preventDefault();
 
-		if (history_index < history.length - 1) {
-			history_index++;
-			input.innerText = history[history_index];
+		const	next_command = history.readNext();
+
+		if (next_command !== null) {
+			terminal_input.innerText = next_command;
 		} else {
-			history_index = history.length;
-			input.innerText = "";
+			terminal_input.innerText = "";
 		}
 
-		place_caret_at_end(input);
+		place_caret_at_end(terminal_input);
 	}
 });
 

@@ -21,12 +21,32 @@ html, body {
 	white-space: pre;
 }
 
+#reader {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+#reader-output {
+	padding-bottom: 32px;
+}
+
+#reader-disclaimer {
+	white-space: normal;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding: 10px;
+	background-color: #111111;
+	border-top: 1px solid #333333;
+}
+
 .input-line {
 	display: flex;
 	align-items: center;
 }
 
-#input, #reader-input {
+#terminal-input {
 	outline: none;
 	flex: 1;
 	caret-shape: block;

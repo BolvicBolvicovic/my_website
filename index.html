@@ -8,13 +8,13 @@
 </head>
 <body>
 	<div id="terminal">
-		<div id="output">
-			<span id="output-welcome-message"></span>
+		<div id="terminal-output">
+			<span id="terminal-output-welcome-message"></span>
 		</div>
 		<div class="input-line">
-			<span id="input-line-tag"></span>
+			<span id="terminal-input-prompt"></span>
 			<span
-				id="input"
+				id="terminal-input"
 				contenteditable="true"
 				spellcheck="false"
 				autocorrect="off"
@@ -22,7 +22,18 @@
 		</div>
 	</div>
 
-	<div id="reader" style="display: none;" tabindex="0"></div>
+	<div id="reader" style="display: none;" tabindex="0">
+		<span id="reader-output"></span>
+		<div 
+		      id="reader-disclaimer"
+		>
+			<span>press '</span>
+			<span style="color: red;">q</span>
+			<span>' to </span>
+			<span style="color: red;">quit</span>
+			<span> (go back)</span>
+		</div>
+	</div>
 
 	<script src="script.js"></script>
 </body>
