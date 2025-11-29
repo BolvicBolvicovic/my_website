@@ -1,5 +1,14 @@
+// TODO: make current_dir working in hash so that people that type a dir with a hash are redirected to the correct dir.
+
 /* CLASSES */
-// TODO: Document the RingBuffer
+
+/* Name: RingBuffer
+ * Description: ring buffer class for O(1) sized history constant performance.
+ * Usage: 
+ * let rb0 = new RingBuffer(size);
+ * let rb2 = RingBuffer.fromArray(array);
+ * let rb3 = RingBuffer.fromArray(array, size);
+ * */
 class	RingBuffer {
 	constructor(size = 500) {
 		this.size = size;
@@ -101,18 +110,24 @@ Type <span style="color: ${yellow};">help</span> anytime to see available comman
 Type <span style="color: ${yellow};">help [second command]</span> for detailed information about a specific command.
 `;
 
+// TODO: Write projects based on pined project on github, add poems
 const	FS = Object.freeze({
 	pwd: "/",
 	files: ["whoami"],
 	dir: [
 		{
-			pwd: "posts",
-			files: ["branchless"],
+			pwd: "poems",
+			files: [],
 			dir: []
 		},
 		{
 			pwd: "portfolio",
 			files: [],
+			dir: []
+		},
+		{
+			pwd: "posts",
+			files: ["branchless"],
 			dir: []
 		}
 	]
@@ -128,6 +143,8 @@ const	terminal_output				= document.getElementById("terminal-output");
 const	terminal_input_output_welcome_message	= document.getElementById("terminal-output-welcome-message");
 const	terminal_input				= document.getElementById("terminal-input");
 const	terminal_input_prompt			= document.getElementById("terminal-input-prompt");
+
+const	is_mobile				= /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 /* FILES */
 const	file_whoami = `
@@ -285,6 +302,8 @@ function	run_command(line) {
  * Return type: none
  * */
 function	place_caret_at_end(node) {
+// Note: .focus() puts the cursor at the end when you click under the input
+// and at the start when you click over the input.
 	node.focus();
 
 	const	range		= document.createRange();
@@ -531,28 +550,36 @@ terminal.addEventListener("click", (e) => {
 		terminal_input.focus();
 });
 
-terminal_input.focus();
+if (!is_mobile) {
+	terminal_input.focus();
+}
 
 terminal_input.addEventListener("keydown", (e) => {
 	if (e.key === "Enter") {
 		e.preventDefault();
 
+		if (is_mobile) {
+			terminal_input.blur();
+		}
+
 		const	command		= terminal_input.innerText.trim();
 		const	command_line	= document.createElement("div");
+		let	response_line;
 
 		command_line.textContent= terminal_input_prompt.textContent + command; 
 		terminal_output.appendChild(command_line);
 
 		if (command) {
-			const	response_line	= document.createElement("div");
+			response_line = document.createElement("div");
 
-			history.push(command);
+			history.pushBack(command);
 			response_line.innerHTML = run_command(command);
 			terminal_output.appendChild(response_line);
 			terminal_input.innerText = "";
 
 			localStorage.setItem("history", JSON.stringify(history.toArray()));
 		}
+		
 		terminal.scrollTop = terminal.scrollHeight;
 	}
 	

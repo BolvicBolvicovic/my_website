@@ -52,3 +52,45 @@ html, body {
 	caret-shape: block;
 	caret-color: white;
 }
+
+#terminal-output-welcome {
+	display: flex;
+	flex-direction: row;
+}
+#terminal-output-welcome-message {
+	width: 50%;
+}
+
+#terminal-image-container {
+	width: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+@media (max-width: 600px) {
+	html, body {
+		font-size: 8px;
+	}
+
+	#terminal-output-welcome {
+		flex-direction: column-reverse;
+		white-space: pre-wrap;
+	}
+
+	#terminal-output-welcome-message {
+		width: 100%;
+	}
+
+	#terminal-image-container {
+		width: 100%;
+	}
+
+	#reader {
+		font-size: 12px;
+	}
+
+	#reader-output {
+		padding-bottom: 48px;
+	}
+}
