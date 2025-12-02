@@ -1,3 +1,20 @@
+.text-block {
+	max-width: 800px;
+}
+
+.input-line {
+	display: flex;
+	align-items: center;
+}
+
+.profile-picture {
+	border-radius: 360px;
+	position: relative;
+	right: 150px;
+	max-width: 250px;
+	max-height: 250px;
+}
+
 html, body {
 	font-family: JetBrains Mono, monospace;
 	font-size: 16px;
@@ -9,6 +26,19 @@ html, body {
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
+}
+
+pre {
+	background: #1e1e1e;
+	color: #dcdcdc;
+	padding: 1rem;
+	border-radius: 6px;
+	overflow-x: auto;
+	max-width: 800px;
+}
+
+code {
+	font-family: "Fira Code", "Consolas", monospace;
 }
 
 #terminal, #reader {
@@ -27,7 +57,7 @@ html, body {
 }
 
 #reader-output {
-	padding-bottom: 32px;
+	padding-bottom: 56px;
 }
 
 #reader-disclaimer {
@@ -39,11 +69,6 @@ html, body {
 	padding: 10px;
 	background-color: #111111;
 	border-top: 1px solid #333333;
-}
-
-.input-line {
-	display: flex;
-	align-items: center;
 }
 
 #terminal-input {
@@ -64,15 +89,9 @@ html, body {
 #terminal-image-container {
 	width: 50%;
 	display: flex;
-	justify-content: center;
-	align-items: center;
 }
 
-@media (max-width: 600px) {
-	html, body {
-		font-size: 8px;
-	}
-
+@media (max-width: 920px) {
 	#terminal-output-welcome {
 		flex-direction: column-reverse;
 		white-space: pre-wrap;
@@ -84,6 +103,21 @@ html, body {
 
 	#terminal-image-container {
 		width: 100%;
+		justify-content: center;
+		align-items: center;
+
+	}
+
+	.profile-picture {
+		right: 0px;
+		max-width: 250px;
+		max-height: 250px;
+	}
+}
+
+@media (max-width: 600px) {
+	html, body {
+		font-size: 8px;
 	}
 
 	#reader {

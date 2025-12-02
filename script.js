@@ -1,5 +1,3 @@
-// TODO: make current_dir working in hash so that people that type a dir with a hash are redirected to the correct dir.
-
 /* CLASSES */
 
 /* Name: RingBuffer
@@ -7,7 +5,8 @@
  * Usage: 
  * let rb0 = new RingBuffer(size);
  * let rb2 = RingBuffer.fromArray(array);
- * let rb3 = RingBuffer.fromArray(array, size);
+ * let rb2 = RingBuffer.fromArray(array, head);
+ * let rb3 = RingBuffer.fromArray(array, head, size);
  * */
 class	RingBuffer {
 	constructor(size = 500) {
@@ -18,14 +17,16 @@ class	RingBuffer {
 		this.readHead = 0;
 	}
 
-	static fromArray(arr, size = 500) {
+	static fromArray(arr, head = 0, size = 500) {
 		let	ringBuffer = new RingBuffer(size);
 
-		ringBuffer.count = arr.length;
-
 		for (let i = 0; i < arr.length; i++) {
-			ringBuffer.pushBack(arr[i]);
+			ringBuffer.buffer[i] = arr[i];
 		}
+
+		ringBuffer.head = parseInt(head);
+		ringBuffer.readHead = ringBuffer.head;
+		ringBuffer.count = arr.length;
 
 		return ringBuffer;
 	}
@@ -100,11 +101,11 @@ If you do not have the time to interact, click <a href="#whoami" style="color: $
 Type a <span style="color: ${yellow};">command</span> (the yellow words below) and press Enter to explore.
 
 <span style="color: ${green};">Quick start:</span>
-	<span style="color: ${yellow};">read whoami</span>   Learn about me
-	<span style="color: ${yellow};">cd posts</span>      Explore my blog posts 
-	<span style="color: ${yellow};">ls</span>            Show what's available (<span style="color: ${dusty_blue};">folders</span> are blue, files are white)
+	<span style="color: ${yellow};">read whoami</span>    Learn about me
+	<span style="color: ${yellow};">cd posts</span>       Explore my blog posts 
+	<a href="#posts/branchless" style="color: ${yellow};">latest</a>         Read my latest post
 
-<span style="color: ${dusty_blue};">Try it now: type read whoami and press Enter</span>
+<span style="color: ${dusty_blue};">Try it now: type <span style="color: ${yellow};">read whoami</span> and press Enter</span>
 
 Type <span style="color: ${yellow};">help</span> anytime to see available commands.
 Type <span style="color: ${yellow};">help [second command]</span> for detailed information about a specific command.
@@ -122,7 +123,7 @@ const	FS = Object.freeze({
 		},
 		{
 			pwd: "portfolio",
-			files: [],
+			files: ["kfs"],
 			dir: []
 		},
 		{
@@ -149,14 +150,17 @@ const	is_mobile				= /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 /* FILES */
 const	file_whoami = `
 <h1>WHOAMI</h1>
+<div class="text-block">
 Hi, I'm Victor 🚀
 
 I'm a software engineer with a deep fascination for how computers work — from the smallest embedded systems to complex kernels.
 
 <span style="color: ${green};">Background: atypical</span>
 I specialized in Kernel and System programming at 42, and I'm currently expanding my expertise in Embedded Systems at Hermods in Sweden, where I'm also learning Swedish.
+
 Before learing how to code, I did various things.
 In highschool, I was mainly studying science but I bifurcated right at the start of my college years. I wanted to become a writer. I went to an intensive course for literature called "prépa". Then I went to la Sorbonne University to continue in the field of literature. I found out that I did not like the environment and instead I started to work in a museum's bookshop.
+
 As I was missing out logical thinking from my time in highschool, I dedided to give coding a shot and found out there was a 42 school opening in Le Havre: I moved there and this is how my journey as a software developer started.
 
 <span style="color: ${green};">What drives me: curiosity and passion</span>
@@ -169,28 +173,318 @@ Right now, I'm focused on understanding the intrinsect of IoT by learning how th
 
 <span style="color: ${dusty_blue};">Want to connect?</span>
 Check out my projects in the portfolio folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
-You can mail me at victor.cornille@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcornille"/>LinkedIn</a>.
+You can mail me at victor.cornille@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcornille"/>LinkedIn</a>.</div>
 `;
-const	file_notes_branchless = `
+const	file_posts_branchless = `
 <h1>Branchless C code</h1>
-Link to the <a href="https://github.com/BolvicBolvicovic/branchless">project</a>.
+<div class="text-block">I wanted for some time to study the arcana of branchless code. Turning C code with many branches into branchless C that looks esoteric is a very attractive trick for the student that I am.
+
+Furthermore, it is possible to find some actual performance benefit in doing so. To start my quest, I designed 5 small exercises of various difficulties that you can find on my <a href="https://github.com/BolvicBolvicovic/branchless">github</a>.
+
+Below is one of them: turning a basic branching version of a median between three numbers that uses classic comparisons into a branchless version:</div>
+<pre><code>/* Branching version: return the median of a, b, c using comparisons */
+int
+median_branch(int a, int b, int c)
+{
+	if (a > b)
+	{
+		if (b > c)
+			return b; /* a > b > c */
+		else if (a > c)
+			return c; /* a > c >= b */
+		else
+			return a; /* c >= a > b */
+	}
+	else
+	{
+		if (a > c)
+			return a; /* b >= a > c */
+		else if (b > c)
+			return c; /* b > c >= a */
+		else
+			return b; /* c >= b >= a */
+	}
+}
+</code></pre>
+<div class="text-block">If you find this code ugly, that it is not the most efficient way to compute a median between three values: sure. And there is another problem to it. The decompiled version, (obtained with <a href="https://godbolt.org/">godbolt</a> or gcc -O2 -S -masm=intel main.c -o -), has a conditional jump which could potentially lead to many instruction cache misses and lower the performance drastically if a big amount of data needs to be piped into that function and that the branch predictor is not that performant:</div>
+<pre><code>	.globl	median_branch
+	.type	median_branch, @function
+median_branch:
+.LFB11:
+	.cfi_startproc
+	cmp	edi, esi
+	jle	.L2		// Notice the conditional jump here (Jump Less or Equal)
+	cmp	edi, edx
+	mov	eax, esi
+	cmovg	edi, edx
+	cmp	esi, edx
+	cmovle	eax, edi
+	ret
+	.p2align 4,,10
+	.p2align 3
+.L2:
+	cmp	esi, edx
+	mov	eax, edi
+	cmovg	esi, edx
+	cmp	edi, edx
+	cmovle	eax, esi
+	ret
+	.cfi_endproc
+</code></pre>
+<div class="text-block">To be able to handle these multiple branches into branchless code, we need to understand two concepts:</div>
+<h3>1. XOR "Pairs"</h3>
+<div class="text-block">What I call a XOR pair is just a concept that helps me to visualize/understand how two integers can be "pushed" into one value and "popped" from that value.
+
+For a XOR pair 'X' and an integer 'a', 'a' is said pushed to 'X' when 'a' is XORed with 'X' for the first time.
+If 'a' has been pushed to 'X', the next time 'a' is XORed with 'X', 'a' will be popped and 'X' will have the value of the other integer:</div>
+<pre><code>int	a = 42;
+int	X = 1;
+
+X ^= a;		// 'a' is pushed into 'X'	(X == 43)
+X ^= a;		// 'a' is popped from 'X'	(X == 1)
+</code></pre>
+<h3>2. Conditional mask</h3>
+<div class="text-block">A conditional mask is a mask that is built from a comparison by taking advantage that a boolean in C is also a 1 or a 0:</div>
+<pre><code>int	a = 0;
+int	b = 1;
+
+// Instead of writing if (a < b) a+= 42;
+
+a += 42 & -(a < b);
+
+// Explanation:
+// a < b is true, meaning it equals to 1.
+// Then inverting 1 into -1 gives the mask 0xffffffff.
+// ANDing with 42 returns 42, which is then added to a.
+// If the mask was false, it would give the mask 0x00000000
+// and ANDing with 42 would result in 0, not adding anything.
+</code></pre>
+<div class="text-block">We will use these two concepts together to be able to solve our problem with the median.</div>
+
+<h3>💡 Some tips I learned by doing these exercises</h3>
+<div class="text-block">Alongside these two concepts, I realized a couple of things, starting with the most important:</div>
+<h4>Always check assembly first</h4>
+<div class="text-block">Do not try to "un-branch" your code before reading its decompiled version. Some piece of code in the exercises I made DO NOT need to be rewritten in a branchless fashion. In many cases, your compiler will have done the work for you. In fact, the compiled version of the branched clamp_range (one of the exercises) is branchless and has one comparison less than the rewritten version.</div>
+<h4>Reduce problem to a pair problem</h4>
+<div class="text-block">Try to reduce a "multi-conditional" assertion into a bunch of interacting pairs. That allows you to select one of two values very easily with a conditional mask.</div>
+<h4>Versatility of a conditional mask</h4>
+<div class="text-block">Any function/operation returning a boolean can be used with a conditional mask.</div>
+
+<h3>The solution</h3>
+<div class="text-block">In the code with branching, we only do 3 comparisons in total. We can inspire ourselves from that by creating 3 masks for each cases:</div>
+<pre><code>int	a_less_b = -(a < b);	// -1 or 0
+int	a_less_c = -(a < c);	// -1 or 0
+int	b_less_c = -(b < c);	// -1 or 0
+</code></pre>
+<div class="text-block">Notice that we do the opposite comparison from the original branched code comparison. The reason for that is that our conditional mask will help us decide if we want to "pop" or "push" our number into a pair. We are going to use one of our tips: try to reduce a "multi-conditional" assertion into a bunch of interacting pairs. The branched version of the code does for one of the cases:</div>
+<pre><code>if (a > b)
+{
+	if (b > c)
+		return b; /* a > b > c */
+	...
+}
+// We could have written if (a > b && b > c) return b;
+</code></pre>
+<div class="text-block">This algorithm does not seem to fit our use case since it forces the interaction of 3 numbers and we want pairs. Instead, we will chose to find the minimum for each comparison:</div>
+<pre><code>// A step by step explanation taking the first line as an example.
+// Step 1: Find out if a < b and turning it into a mask: we did that earlier with a_less_b.
+// Step 2: Create our pair: a ^ b
+// Step 3: Select either our pair or 0. If a_less_b == -1 then our pair is selected else 0.
+// Step 4: Push or Pop the number.
+// 	If a > b then it is a push of b since our pair has been canceled, resulting in b ^ 0 == b.
+// 	Else it is a pop of b since our pair has been selected, resulting in b ^ pair == a.
+int	ab_min	= b ^ ((a ^ b) & a_less_b);
+int	ac_min	= c ^ ((a ^ c) & a_less_c);
+int	bc_min	= c ^ ((b ^ c) & b_less_c);
+</code></pre>
+<div class="text-block">The result is 3 integers which two of them are equal and smaller than the third. This will be true for any case:
+
+If a is the minimum then a == ab_min == ac_min and the median will be bc_min.
+If b is the minimum then b == ab_min == bc_min and the median will be ac_min.
+If c is the minimum then c == ac_min == bc_min and the median will be ab_min.
+
+We just need to XOR the result to cancel out the minimum and the median will be the last value standing:</div>
+<pre><code>return ab_min ^ ac_min ^ bc_min;
+</code></pre>
+<div class="text-block">This code results in a completely branchless assembly that has the other advantage of being smaller in size:</div>
+<pre><code>	.globl	median_branchless
+	.type	median_branchless, @function
+median_branchless:
+.LFB12:
+	.cfi_startproc
+	cmp	edi, esi
+	mov	eax, esi
+	cmovle	eax, edi	// The branchless version uses conditional moves 
+	cmp	edi, edx	// to avoid branch misprediction penalties.
+	cmovg	edi, edx
+	xor	eax, edi
+	cmp	esi, edx
+	cmovg	esi, edx
+	xor	eax, esi
+	ret
+	.cfi_endproc
+</code></pre>
+<div class="text-block">Learning branchless techniques teaches you to think differently about control flow and its impact on generated assembly. While not always faster, these patterns give you another optimization strategy when performance matters, and they often make code more amenable to vectorization.
+
+Perhaps most valuable is the broader lesson: checking the actual assembly output is one of the fastest ways to identify performance bottlenecks that aren't obvious from source code alone.
+
+<div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/branchless">project</a>.
+You can contact me at victor.cornille@gmail.com.</div>
+`;
+
+const	file_portfolio_kfs	= `
+<h1>Kernel From Scratch</h1>
+<div class="text-block">KFS is a x86_32 kernel for study purposes from the eponym 42 specialization suite of projects. It is the first kernel I have written. You can look at the project on my <a href="https://github.com/BolvicBolvicovic/kfs">github</a>.
+The suite is composed of 10 projects, each one of them adding a new functionality to the kernel. I have validated the 4th first and finished the 5th.</div>
+<h3>Introduction</h3>
+<h4>Emulation</h4>
+<div class="text-block">We are free to choose whatever software for emulating the device that will run the kernel. It is proposed to use KVM but I opted for <a href="https://www.qemu.org/">QEMU</a> as I thought it was easy to use when I started the project. Probebly that a tutorial that I found on <a href="https://wiki.osdev.org/Expanded_Main_Page">OSDev</a> used it and I did the same.</div>
+<h4>Language</h4>
+<div class="text-block">Just like for the emulation software, we are free to choose the language we want. C is the default option as it does not need anything special to make its base features work. C++ has new and delete keywords that cannot be used (and I am not the biggest fan of C++ anyway). Rust seems attractive but most of the information online is written for C/C++. I have no knowledge of Zig. So I decided to go for C with some ASM stubs here and there.</div>
+<h4>Toolchain</h4>
+<div class="text-block">I created a small bash script to get the <a href="https://newos.org/toolchains">toolchain</a> and build with a Makefile the image of the OS that is used with QEMU. I also use grub2-common, grub-pc-bin and xorriso.</div>
+<h3 id="portfolio/kfs/grub-boot-screen">kfs-1 / Grub, Boot and Screen</h3>
+<div class="text-block">The first project is the simplest one by far. It is a kind of setup project where you get started with your kernel that won't be able to do anything but to run. It must boot with GRUB and write characters on the screen.
+
+The only "compicated" thing is to understand why and how to setup the higher-half kernel. A higher-half kernel is a kernel mapped to the high address space, over 0xC0000000 (around 1GB in the RAM). That facilitates the creation of a fixed size user virtual address space for a user process. We want it to be fixed size in case the kernel grows (which is the case anytime you add more code or if you need allocations that are persistant across processes and that need full privileges to be accessed).
+
+The virtual memory layout in the RAM looks like this:
+	- 0x00000000-0x00100000 (0-1MB): Bootloader + some interractions with the virtual hardware (i.e. the VGA buffer at 0xB8000 where we will write our first characters to the screen)
+	- 0x00100000: Start of identity mapped kernel. Identity mapped means that the virtual address of the kernel matches its physical address. We copy this to the higher address space before giving this address space to the user.
+	- 0x00100000-0xC0000000 (1MB-1GB): User space. This is where the heap, the stack and a user program is stored.
+	- 0xC0000000-0xFFFFFFFF (1GB-4GB): Kernel space. This is where the kernel and the page directory are stored.</div>
+<pre><code># kernel/start.s (Note that I use the default GCC AT&T syntax to use the same compiler.
+# I did not give much of a thought. I know that the intel syntax is more common.)
+
+# Maps the current page table that maps the bootloader and the kernel
+# to both address 0x00000000 and 0xC0000000 because switching directory
+# table does not change the address of the next instruction that was mapped
+# in the previous directory table. Meaning that the CPU would execute code
+# that is not mapped, leading to an interruption that would halt the CPU.
+# That way we get the virtual memory layout we want for our kernel.
+
+movl $(boot_page_table0 - KERNEL_VIRT_BASE + PRIV), boot_page_dir - KERNEL_VIRT_BASE
+movl $(boot_page_table0 - KERNEL_VIRT_BASE + PRIV), boot_page_dir - KERNEL_VIRT_BASE + 768 * 4
+# Same address here ^^^^^^^^^^^ goes to both page 0 and 768 of boot_page_dir (we do *4 because pages are 4 bytes wide). 
+
+# The other thing I have not mentioned that we want in our setup is that
+# our page directory is said "recursive". Now the only thing that recursive means here,
+# is that the page directory is mapped within itself, at the end.
+# The reason we want to do that is that we can then easily access it
+# at 0xFFFFF000 and its pages at 0xFFC00000 making it consisant across each process
+# (that have their own page directory but with the kernel mapped at the same place).
+# As I said, we just need to map the physical address of the directory at the end of itself:
+
+movl $(boot_page_dir - KERNEL_VIRT_BASE + PRIV), boot_page_dir - KERNEL_VIRT_BASE + 1023 * 4
+# 1023 being the last index for the last entry in the directory table.
+</code></pre>
+<div class="text-block">There is not so much more to it if you do not handle the bonus parts (which I did but I do not want to talk about it now since I will cover it in the <a href="#portfolio/kfs/interrupts">Interrupts</a> section since the PS/2 keyboard emulated by QEMU is connected to the PIC which uses interrupts.</div>
+<h3 id="portfolio/kfs/gdt-stack">kfs-2 / Global Descriptor Table & Stack</h3>
+<div class="text-block">The second project is also about doing some setup, mainly the Global Descriptor Table (GDT) which is a legacy way of representing memory and that needs to be set up for backward compability.</div>
+<h4>The Stack</h4>
+<div class="text-block">The kernel stack can be setup in the linker or reserved in the post-bootloader file (in my case, kernel/start.s). It is nothing special, just reserve a big array of bytes for the stack and set it up after the jump (after switching dir).</div>
+<pre><code># kernel/start.s
+
+# ...
+
+.section .boot.stack, "aw", @nobits
+.global stack_top
+.global stack_bottom
+stack_bottom:
+.skip       0x10000
+stack_top:
+# creating two labels at the bottom and at the top of the stack 
+# that can be used throughout the whole the kernel
+
+# ...
+	# Right before the jump 
+	lea higher_half, %ecx
+	jmp *%ecx
+
+.section .text
+.align 4
+# Higher Half Kernel
+higher_half:
+	# Reload cr3 forces a TLB flush and changes take effect
+	movl %cr3, %ecx
+	movl %ecx, %cr3
+
+	# Setting up the stack
+	mov  $stack_top, %esp
+
+# ...
+</code></pre>
+<h4>The GDT</h4>
+<div class="text-block">The Global Descriptor Table is the table that holds information about memory segments. To quote the <a href="https://wiki.osdev.org/Segmentation">segment page</a> from OSDev: "Segmentation is considered obsolete memory protection technique in protected mode by both CPU manufacturers and most of programmers. It is no longer supported in long mode. [It] is required to get protected mode working; also 64 bit GDT is needed to enter long mode (long mode does not exist in x86_32) and segments are still used to jump from long mode to compatibility mode and the other way around.". As I mentionned earlier, just backward compatibility.
+
+It has a lenght of 5 to 6 gdt_gate_t entry (Note that the name is arbitrary) depending if you use a Task State Segment (TSS). Don't worry about the latter, we'll talk about it in the <a href="#portfolio/kfs/processes">Processes</a> section.
+The struct gdt_gate_t looks like this:</div>
+<pre><code>// drivers/descriptor/descriptor.h
+
+// Basically, it is composed of:
+// 	- a start adress of a segment split in 3 parts
+// 	- some flags (granularity of the segment (1 byte or 4kB), access)
+typedef struct {
+	uint16_t	limit_low;
+	uint16_t	base_low;
+	uint8_t		base_middle;
+	uint8_t		access;
+	uint8_t		granularity;
+	uint8_t		base_high;
+} __attribute__((packed)) gdt_gate_t; // Don't mind about that, it just means that the compiler does not add padding to the structure to align it.
+</code></pre>
+<div class="text-block">The 5 mendatory segments to set up are:
+	- the NULL segment
+	- the kernel code segment
+	- the kernel data segment
+	- the user mode code segment
+	- the user mode data segment
+
+The bonus is about a minimalistic shell to be able to run tests/reboot/halt. There is not much to it.</div>
+<h3 id="portfolio/kfs/memory">kfs-3 / Memory</h3>
+<div class="text-block">Now things start to be interesting.</div>
+<h4>Memory layout</h4>
+<div class="text-block">// TODO</div>
+<h4>Physical Memory Manager</h4>
+<div class="text-block">// TODO</div>
+<h4>Virtual Memory Manager</h4>
+<div class="text-block">// TODO</div>
+<h4>Memory allocators</h4>
+<div class="text-block">// TODO</div>
+<h3 id="portfolio/kfs/interrupts">kfs-4 / Interrupts</h3>
+<div class="text-block">// TODO</div>
+<h4>Interrupt Service Routine</h4>
+<div class="text-block">// TODO</div>
+<h4>Interrupt Request</h4>
+<div class="text-block">// TODO</div>
+<h3 id="portfolio/kfs/processes">kfs-5 / Processes</h3>
+<div class="text-block">// TODO</div>
+<h4>Cooperative Multitasking</h4>
+<div class="text-block">// TODO</div>
+<h4>Preemptive Multitasking</h4>
+<div class="text-block">// TODO</div>
+
+<div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/kfs">project</a>.
+You can contact me at victor.cornille@gmail.com.</div>
 `;
 
 const	saved_history		= localStorage.getItem("history");
+const	saved_history_head	= localStorage.getItem("history_head");
 const	saved_hints_enabled	= localStorage.getItem("hints_enabled");
 
 /* VARIABLES */
 let	current_dir		= FS;
+let	history_head		= saved_history_head ? saved_history_head : 0;
 let	history			= saved_history
-					? RingBuffer.fromArray(JSON.parse(saved_history))
+					? RingBuffer.fromArray(JSON.parse(saved_history), history_head)
 					: new RingBuffer();
 let	reading			= false;
 let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
 
 /* ERRORS */
-const unknown_directory	= "Error: Unknown directory. Maybe you misstyped the directory name.";
-const unknown_command	= "Error: Unknown command. Maybe you misstyped the command.";
-const unknown_file	= "Error: Unknown file. Maybe you misstyped the file name or its path.";
+const unknown_directory = "Directory not found. Please check the name.";
+const unknown_command = "Command not found. Please check the spelling.";
+const unknown_file = "File not found. Please check the name and path.";
 
 /* HELPERS */
 
@@ -204,7 +498,11 @@ function	handle_path_hash() {
 	if (hash) {
 		const	no_hash_hash	= hash.replace("#", "");
 		const	path		= no_hash_hash.split("/");
-		open_reader(get_file(path), no_hash_hash);
+		const	unsafe_file	= get_file(path);
+		const	file		= unsafe_file === unknown_file
+			? get_file(path)
+			: unsafe_file;
+		open_reader(file, no_hash_hash, "/");
 	}
 }
 
@@ -254,9 +552,11 @@ function	get_file(path) {
 
 	switch (file) {
 		case "branchless":
-			return file_notes_branchless;
+			return file_posts_branchless;
 		case "whoami":
 			return file_whoami;
+		case "kfs":
+			return file_portfolio_kfs;
 		default:
 			return unknown_file;
 	}
@@ -278,7 +578,7 @@ function	run_command(line) {
 		case "latest":
 			return latest();
 		case "read":
-			return open_reader(get_file(path), args)
+			return open_reader(get_file(path), args, current_dir.pwd)
 		case "ls":
 			if (args == "") return ls(current_dir);
 			return ls(get_dir(path, current_dir));
@@ -394,6 +694,7 @@ Do not forget to hit enter to execute the command!
 	return fs_list.join(" ");
 }
 
+// TODO: make current_dir working in hash so that people that type a dir with a hash are redirected to the correct dir.
 /* Name: cd
  * Description: change the working directory.
  * Usage: cd <DIR>
@@ -405,6 +706,8 @@ function	cd(dir) {
 	current_dir = dir;
 	terminal_input_prompt.textContent = build_line_tag();
 	
+	//window.location.hash = path;
+
 	if (hints_enabled)
 		return `
 Hint: You have moved to <span style="color: ${dusty_blue};">${dir.pwd}</span>.
@@ -423,7 +726,7 @@ Do not forget to hit enter to execute the command!
  * 	- quit by hitting q.
  * Usage: read <FILE>
  * */
-function	open_reader(file, path) {
+function	open_reader(file, path, file_pwd) {
 	if (file === unknown_file)
 		return unknown_file;
 
@@ -434,7 +737,7 @@ function	open_reader(file, path) {
 	reader.style.display = "";
 	reader.focus();
 
-	window.location.hash = path;
+	window.location.hash = (file_pwd !== "/" ? file_pwd + "/" : "") + path;
 	
 	return "";
 }
@@ -458,7 +761,7 @@ function	close_reader() {
  * Usage: latest
  * */
 function	latest() {
-	return read(file_notes_branchless);
+	return open_reader(file_posts_branchless, "posts/branchless", "/");
 }
 
 /* Name: help
@@ -523,7 +826,9 @@ function	help(arg) {
  *	- ls	[DIR]	: lists all files in the current folder.
  *	- cd	[DIR]	: change to current working folder to [DIR].
  *	- read	[FILE]	: opens a file in a reader.
+ *	- toggle_hints	: toggle hints on if it was off and vice-versa.
  *	- clear		: clears the entire history. Care, you will not be able to scroll back.
+ *	- clear_cache	: clears the history cache and the hints preference.
  *	- help	[CMD]	: prints all information about the command [CMD].
  * */`;
 	}
@@ -578,6 +883,7 @@ terminal_input.addEventListener("keydown", (e) => {
 			terminal_input.innerText = "";
 
 			localStorage.setItem("history", JSON.stringify(history.toArray()));
+			localStorage.setItem("history_head", history.head);
 		}
 		
 		terminal.scrollTop = terminal.scrollHeight;
