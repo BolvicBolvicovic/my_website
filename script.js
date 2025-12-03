@@ -1,3 +1,8 @@
+/* ERRORS */
+const unknown_directory = "Directory not found. Please check the name.";
+const unknown_command = "Command not found. Please check the spelling.";
+const unknown_file = "File not found. Please check the name and path.";
+
 /* CLASSES */
 
 /* Name: RingBuffer
@@ -113,7 +118,7 @@ Type <span style="color: ${yellow};">help [second command]</span> for detailed i
 
 // TODO: Write projects based on pined project on github, add poems
 const	FS = Object.freeze({
-	pwd: "/",
+	pwd: "",
 	files: ["whoami"],
 	dir: [
 		{
@@ -470,21 +475,19 @@ You can contact me at victor.cornille@gmail.com.</div>
 
 const	saved_history		= localStorage.getItem("history");
 const	saved_history_head	= localStorage.getItem("history_head");
+const	saved_directory		= localStorage.getItem("current_dir");
 const	saved_hints_enabled	= localStorage.getItem("hints_enabled");
 
+const	unsafe_directory	= get_dir(saved_directory.split("/"), FS);
 /* VARIABLES */
-let	current_dir		= FS;
+
+let	current_dir		= unsafe_directory !== unknown_directory ? unsafe_directory : FS;
 let	history_head		= saved_history_head ? saved_history_head : 0;
 let	history			= saved_history
 					? RingBuffer.fromArray(JSON.parse(saved_history), history_head)
 					: new RingBuffer();
 let	reading			= false;
 let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
-
-/* ERRORS */
-const unknown_directory = "Directory not found. Please check the name.";
-const unknown_command = "Command not found. Please check the spelling.";
-const unknown_file = "File not found. Please check the name and path.";
 
 /* HELPERS */
 
@@ -499,10 +502,14 @@ function	handle_path_hash() {
 		const	no_hash_hash	= hash.replace("#", "");
 		const	path		= no_hash_hash.split("/");
 		const	unsafe_file	= get_file(path);
-		const	file		= unsafe_file === unknown_file
-			? get_file(path)
-			: unsafe_file;
-		open_reader(file, no_hash_hash, "/");
+
+		if (unsafe_file === unknown_file) {
+			if (path.length !== 0 && path[-1] !== current_dir.pwd)
+				cd(get_dir(path, FS), no_hash_hash);
+			return;
+		}
+
+		open_reader(unsafe_file, no_hash_hash, "");
 	}
 }
 
@@ -514,7 +521,7 @@ function	build_line_tag() {
 	const	line_tag_start	= "[victor_cornille@my_website ";
 	const	line_tag_end	= "]$ ";
 	
-	return line_tag_start + current_dir.pwd + line_tag_end;
+	return line_tag_start + (current_dir.pwd !== "" ? current_dir.pwd : "/") + line_tag_end;
 }
 
 /* Name: get_dir
@@ -528,6 +535,9 @@ function	get_dir(path, dir) {
 	
 	const	first_dir	= path[0];
 	
+	if (first_dir === dir.pwd || first_dir === "")
+		return get_dir(path.slice(1), dir);
+
 	for (let i = 0; i < dir.dir.length; i++) {
 		if (dir.dir[i].pwd == first_dir)
 			return get_dir(path.slice(1), dir.dir[i]);
@@ -583,9 +593,10 @@ function	run_command(line) {
 			if (args == "") return ls(current_dir);
 			return ls(get_dir(path, current_dir));
 		case "cd":
-			if (args == "") return cd(FS);
-			if (args.startsWith("/")) return cd(get_dir(path, FS));
-			return cd(get_dir(path, current_dir));
+			if (args == "") return cd(FS, "");
+			if (args.startsWith("/")) return cd(get_dir(path, FS), args);
+			// TODO: replace pwd with an actual method to build the path.
+			return cd(get_dir(path, current_dir), current_dir.pwd + args);
 		case "clear":
 			return clear();
 		case "help":
@@ -694,19 +705,18 @@ Do not forget to hit enter to execute the command!
 	return fs_list.join(" ");
 }
 
-// TODO: make current_dir working in hash so that people that type a dir with a hash are redirected to the correct dir.
 /* Name: cd
  * Description: change the working directory.
  * Usage: cd <DIR>
  * */
-function	cd(dir) {
+function	cd(dir, not_split_path) {
 	if (dir == unknown_directory)
 		return unknown_directory;
 
 	current_dir = dir;
 	terminal_input_prompt.textContent = build_line_tag();
-	
-	//window.location.hash = path;
+	window.location.hash = not_split_path;
+	localStorage.setItem("current_dir", not_split_path);
 
 	if (hints_enabled)
 		return `
@@ -737,7 +747,7 @@ function	open_reader(file, path, file_pwd) {
 	reader.style.display = "";
 	reader.focus();
 
-	window.location.hash = (file_pwd !== "/" ? file_pwd + "/" : "") + path;
+	window.location.hash = (file_pwd !== "" ? file_pwd + "/" : "") + path;
 	
 	return "";
 }
@@ -752,7 +762,7 @@ function	close_reader() {
 	reader_output.innerHTML = "";
 	terminal_input.contentEditable = true;
 	terminal_input.focus();
-	window.location.hash = "";
+	window.location.hash = current_dir.pwd;
 }
 
 
@@ -834,7 +844,7 @@ function	help(arg) {
 	}
 }
 
-/* INIT */
+/* INIT MAIN */
 terminal_input_output_welcome_message.innerHTML	= welcome_message;
 terminal_input_prompt.textContent		= build_line_tag();
 
