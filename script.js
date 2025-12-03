@@ -9,7 +9,7 @@ const unknown_file = "File not found. Please check the name and path.";
  * Description: ring buffer class for O(1) sized history constant performance.
  * Usage: 
  * let rb0 = new RingBuffer(size);
- * let rb2 = RingBuffer.fromArray(array);
+ * let rb1 = RingBuffer.fromArray(array);
  * let rb2 = RingBuffer.fromArray(array, head);
  * let rb3 = RingBuffer.fromArray(array, head, size);
  * */
@@ -128,7 +128,7 @@ const	FS = Object.freeze({
 		},
 		{
 			pwd: "portfolio",
-			files: ["kfs"],
+			files: ["esp8266_NON_SDK_NON_OS", "kfs"],
 			dir: []
 		},
 		{
@@ -447,11 +447,84 @@ typedef struct {
 
 The bonus is about a minimalistic shell to be able to run tests/reboot/halt. There is not much to it.</div>
 <h3 id="portfolio/kfs/memory">kfs-3 / Memory</h3>
-<div class="text-block">Now things start to be interesting.</div>
+<div class="text-block">Now things start to be interesting. We are now setting up the memory so that we can use dynamically the whole RAM and be able to use it later for multitasking.</div>
 <h4>Memory layout</h4>
-<div class="text-block">// TODO</div>
+<div class="text-block">Since we are targeting an x86_32 machine, our address space seems to be limited to UINT_MAX. (There is a way to extend that, I won't cover it because I did not implemented it.) Now, what does it mean that our address space is limited to UINT_MAX, what is an address even, what is the RAM?
+
+The RAM is the Random Access Memory that is basically where any process on a computer runs. The RAM also hlds the heap, the stack and the data of any process while it runs. In opposition to the disk where files and other software entities persist after a shutdown, the RAM starts from 0 every time. Why use the RAM then? It is faster by orders of magnetude to do read/write on the RAM than on the disk.
+
+Now that we covered quickly what the RAM is, we can get an idea of what is an address: it simply is where a byte in the RAM is stored. The 32 in x86_32 means that our registers cannot take data wider than 32 bits (SIMD aside). Which means that our address are 32 bits wide and that explains the UINT_MAX limit it has. The address space is the totality of the addresses between 0 and UINT_MAX.
+
+In Real Mode, an address has two part:
+	- a segment
+	- an offset into that segment
+
+And that's it. It points directly to physical memory without any protection of any kind. It means that any process can access that memory. It uses the concept of segmentation which I talked about previously in the <a href="#portfolio/kfs/gdt-stack">GDT section</a>. It is depracated and in facts, when the bootloader runs the _start function, it has already done the switch to protected mode.
+
+In Protected mode, an address is made of three parts:
+	- an index in the page directory
+	- an index in a page table of that directory
+	- an offset into the physical frame mapped to that table
+
+The first thing you might wonder is: what is this page thing? Quoting <a href="https://wiki.osdev.org/Paging">OSDev</a>: "Paging is a system which allows each process to see a full virtual address space, without actually requiring the full amount of physical memory to be available or present. 32-bit x86 processors support 32-bit virtual addresses and 4-GiB virtual address spaces, and current 64-bit processors support 48-bit virtual addressing and 256-TiB virtual address spaces." Since each process has it's own directory, it also allows different processes to run at the same time, referencing the same addresses but mapped to different physical frames, ensuring that they cannot access to each other's physical memory. On x86, paging is handled by the hardware component called Memory Management Unit (<a href="https://wiki.osdev.org/Memory_Management_Unit">MMU</a>).
+
+Now that you have an understanding of what paging is, what about the table and directory parts? Both of their entries are 4 bytes wide and are split in two parts:
+	- the address of the table/frame it is pointing to
+	- a bunch of flags that rule how the table/frame can be accessed
+<pre><code>// This is not in a file since in practice, I do not need to set every bits. 
+
+typedef	unsigned int	pdir_entry;	// Note: the differences for the masks between a directory entry
+typedef unsigned int	ptable_entry;	// and a table entry are only for 4MB pages.
+
+#define	ADDRESS		0xFFFFF000	// 31-12 Note that it is a virtual address
+#define	AVAILABLE	0x00000F40	// 11-8 && 6
+#define	PAGE_SIZE	0x00000080	// 7 (0 == 4KB, 1 == 4MB) Note that these masks are for 4KB pages
+#define ACCESSED	0x00000020	// 5 (0 == not read, 1 == read)
+#define CACHE_DISABLED	0x00000010	// 4 (0 == cache enabled, 1 == cache disabled)
+#define	WRITE_THROUGH	0x00000008	// 3 (0 == write-back, 1 == write-through)
+#define USER_SUPERVISOR 0x00000004	// 2 (0 == supervisor only, 1 == full access)
+#define READ_WRITE	0x00000002	// 1 (0 == RO, 1 == RW)
+#define	PRESENT		0x00000001	// 0 (0 == not present, 1 == present)
+</code></pre>
+<div class="text-block">In most cases we only care about the three last flags and the address. Which means in practice that if one wants to get the address of the table, one just does:</div>
+<pre><code>pdir_entry*	dir = 0xFFFFF000;	// Recursive page table address
+uint32_t	virt_addr = 0x12345678;	// A virtual address we want to access;
+
+#define PAGE_DIR_INDEX(ADDR) (((ADDR) >> 22) & 0x3FF)	// Helper to get the directory index
+#define PAGE_TAB_INDEX(ADDR) (((ADDR) >> 12) & 0x3FF)	// Helper to get the table index
+
+pdir_entry	dir_entry	= *(dir + PAGE_DIR_INDEX(virt_addr));
+ptable_entry*	table		= (ptable_entry*)(dir_entry & ADDRESS);	// You can set flags here if you want
+ptable_entry	tab_entry	= *(table + PAGE_TAB_INDEX(virt_addr));
+uint32_t	phys_frame_addr	= (tab_entry & ADDRESS) + (virt_addr & 0xFFF);	// Note that you cannot write to that address since paging is enabled. You need to map it and uses its virtual address.
+</code></pre>
+<div class="text-block">If you want to apply the changes you do to the directory, you need to reload it by passing its address to the CR3 register.
+<pre><code>// In memory/vmm/vmm.c
+extern void switch_dir(uint32_t dir);	// Some assembly stub:
+					// mov	4(%esp), %eax
+					// mov	%eax, %cr3
+					// ret
+// ...
+
+void
+init_vmm(void)
+{
+
+// ...
+
+	switch_dir(PAGE_DIR[1023] & ~0xFFF); // ~0xFFF == 0xFFFFF000 == ADDRESS
+}
+</code></pre>
+
+I will not talk about Long Mode since it is reserved for x64.
+Now that you have an understanding of what paging is, let's dig down on how all this memory is managed.</div>
 <h4>Physical Memory Manager</h4>
-<div class="text-block">// TODO</div>
+<div class="text-block">Before handling the virtual memory, we need to be able to handle physical memory, meaning to map it into some smaller abstraction, one where a byte must be represented by something smaller. I have 32GB of RAM, I don't want to use these 32GB to map themselves.
+
+One way to do that is to use a bitmap. I turns the size of our map from 32GB to 4GB. Much better but as I mentionned earlier, we only have 4GB of virtual memory which some belongs to the user process.
+
+To solve that problem, we can take advantage of the size of a page. A page maps 4KB of memory. We can decide that 1 bit of our bitmap maps a frame of 4KB. If the bit is set, the frame is allocated. Otherwise, it is not.
+We go from 4GB to 1GB. Furthermore, as I mentioned earlier, we are limited by our 32 bits data representations which makes the maximum 4GB and the map 125MB, which is easily handled by the paging mechanism.</div>
 <h4>Virtual Memory Manager</h4>
 <div class="text-block">// TODO</div>
 <h4>Memory allocators</h4>
@@ -470,6 +543,33 @@ The bonus is about a minimalistic shell to be able to run tests/reboot/halt. The
 <div class="text-block">// TODO</div>
 
 <div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/kfs">project</a>.
+You can contact me at victor.cornille@gmail.com.
+Written by me, typo errors caught by AI.</div>
+`;
+
+const	file_portfolio_esp8266_NON_SDK_NON_OS	= `
+<h1>NON SDK NON OS ESP8266 Documentation</h1>
+
+<h3>Introduction</h3>
+<div class="text-block">This little journey started when I first flashed my arduino code into my NodeMCU from a WSL2 instance and waited around 30 seconds to see the chip's LED flashing. When I tried the same thing from a Linux distribution, it still took around 10 seconds which is way too slow in my humble opinion to flash such a simple program.
+
+The first thing I did was to look at how big the arduino's SDK (Software Development Kit) is and it turned out that it made my program bigger than 300kB. A little overkill to make a LED blink. So I decided to try turning the LED on from bare-bone by writting directly to the concerned registers. I found out that it was more difficult than I thought since the latest documentation I found for the <a href="https://github.com/espressif/ESP8266_NONOS_SDK">esp8266_NON_OS_SDK</a> was for the version 1.5.4 (I did not find the <a href="https://www.fdi.ucm.es/profesor/mendias/TFE/recursos/NodeMCU/2c-esp8266_non_os_sdk_api_reference_en.pdf">latest version</a> until later). Further more, I wanted to start from the bare minimum, which is not what the esp8266_NON_OS_SDK offers (since it provides a bunch of helpers that I don't know the quality of).
+
+After some work and research, I found the repo of a certain <a href="https://github.com/cnlohr/nosdk8266">cnlohr</a> which showed me exactly how to get started. The size of my program dropped below 1kB, making it more than 300 times smaller than initially! It was also able to be flashed at lightning speed, enabling fast iterations and making that LED blink in the most straight forward fashion.
+
+I then read the linker file <a href="https://github.com/espressif/ESP8266_NONOS_SDK/blob/master/ld/eagle.rom.addr.v6.ld">eagle.rom.addr.v6.ld</a> which contains the address of every ROM functions that thus cannot be altered and that are in the MCU. The usage of these fonctions was unclear for most of them and I could not find their signature, making it harder to guess. So I decided to reverse-engineer (which was a first for me) a created a <a href="https://github.com/BolvicBolvicovic/esp8266_NON_SDK_NON_OS/blob/main/lib/esp8266.h">header file</a> that gathers what I found and understood by reading the disassembled ROM functions.
+
+Below are a collection of ideas I got by doing that resverse-engineering, classified by groups of function.</div>
+<h3>ETS Espressif's internal library (ets_* functions)</h3>
+<div class="text-block">// TODO</div>
+<h3>Memory management functions (mem* functions)</h3>
+<div class="text-block">// TODO</div>
+<h3>XTensa OS functions (_xtos_* functions)</h3>
+<div class="text-block">// TODO</div>
+<h3>ROM functions / hardware handlers (rom_* functions)</h3>
+<div class="text-block">// TODO</div>
+
+<div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/esp8266_NON_SDK_NON_OS">project</a>.
 You can contact me at victor.cornille@gmail.com.</div>
 `;
 
@@ -490,6 +590,34 @@ let	reading			= false;
 let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
 
 /* HELPERS */
+
+/* Name: autocomplete
+ * Description: takes two strings as arguments.
+ * Uses strstr algo to find the needle haystack and slice the word if found else returns "".
+ * Return type: string
+ * */
+function	autocomplete(needle, haystack) {
+	// TODO: handle autocompletion of dirs (i.e. posts/br -> post/branchless)
+	const	max_len = haystack.length - needle.length;
+
+	for (let i = 0; i < max_len; i++) {
+		let j = 0;
+		for (; j < needle.length; j++) {
+			if (needle[j] !== haystack[j + i]) break;
+		}
+
+		if (j == needle.length) {
+			let	res = "";
+
+			for (j += i; j < haystack.length && haystack[j] != " "; j++) {
+				res += haystack[j];
+			}
+			return res;
+		}
+	}
+
+	return "";
+}
 
 /* Name: handle_path_hash
  * Description: handles the path's hash at initial load and on back/forward buttons.
@@ -567,6 +695,8 @@ function	get_file(path) {
 			return file_whoami;
 		case "kfs":
 			return file_portfolio_kfs;
+		case "esp8266_NON_SDK_NON_OS":
+			return file_portfolio_esp8266_NON_SDK_NON_OS;
 		default:
 			return unknown_file;
 	}
@@ -590,8 +720,8 @@ function	run_command(line) {
 		case "read":
 			return open_reader(get_file(path), args, current_dir.pwd)
 		case "ls":
-			if (args == "") return ls(current_dir);
-			return ls(get_dir(path, current_dir));
+			if (args == "") return ls(current_dir, 0);
+			return ls(get_dir(path, current_dir), 0);
 		case "cd":
 			if (args == "") return cd(FS, "");
 			if (args.startsWith("/")) return cd(get_dir(path, FS), args);
@@ -680,11 +810,23 @@ function	clear() {
  * Description: prints the list of all files and folders in the chosen directory. Defaults to current_dir.
  * Usage: ls <DIR>
  * */
-function	ls(dir) {
+function	ls(dir, mode) {
 	if (dir == unknown_directory)
 		return unknown_directory;
 
 	let	fs_list = [...dir.files];
+
+	switch (mode) {
+		case 1: // Note: file mode
+			return fs_list.join(" ");
+		case 2: // Note: dir mode
+			let	dirs = [];
+			for (let i = 0; i < dir.dir.length; i++) {
+				dirs.push(dir.dir[i].pwd);
+			}
+
+			return dirs.join(" ");
+	}
 
 	for (let i = 0; i < dir.dir.length; i++) {
 		const	colored_dir = `<span style="color: ${dusty_blue};">${dir.dir[i].pwd}</span>`;
@@ -870,6 +1012,47 @@ if (!is_mobile) {
 }
 
 terminal_input.addEventListener("keydown", (e) => {
+	if (e.key === "Tab") {
+		e.preventDefault();
+
+		let	command		= terminal_input.innerText.trim();
+
+		if (!command) return;
+
+		const	parsed_cmd	= command.split(" ").slice(0, 2);
+
+		if (parsed_cmd.length > 2) return;
+
+		let	ls_mode		= 0;
+
+		switch (parsed_cmd[0]) {
+			case "ls":
+			case "cd":
+				ls_mode = 2;
+				break;
+			case "read":
+				ls_mode = 1;
+				break;
+		}
+		
+		if (ls_mode === 0) return;
+
+		const	response_line	= document.createElement("div");
+		const	command_line	= document.createElement("div");
+		const	ls_res		= ls(current_dir, ls_mode);
+
+		if (parsed_cmd.length == 2) {
+			command += autocomplete(parsed_cmd[1], ls_res);
+			terminal_input.innerText = command;
+			place_caret_at_end(terminal_input);
+		}
+		command_line.textContent= terminal_input_prompt.textContent + command; 
+		terminal_output.appendChild(command_line);
+		response_line.innerHTML = ls_res;
+		terminal_output.appendChild(response_line);
+		terminal.scrollTop = terminal.scrollHeight;
+	}
+
 	if (e.key === "Enter") {
 		e.preventDefault();
 
