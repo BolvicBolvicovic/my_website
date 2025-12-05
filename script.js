@@ -449,7 +449,7 @@ The bonus is about a minimalistic shell to be able to run tests/reboot/halt. The
 <h4>Memory layout</h4>
 <div class="text-block">Since we are targeting an x86_32 machine, our address space seems to be limited to UINT_MAX. (There is a way to extend that, I won't cover it because I did not implemented it.) Now, what does it mean that our address space is limited to UINT_MAX, what is an address even, what is the RAM?
 
-The RAM is the Random Access Memory that is basically where any process on a computer runs. The RAM also hlds the heap, the stack and the data of any process while it runs. In opposition to the disk where files and other software entities persist after a shutdown, the RAM starts from 0 every time. Why use the RAM then? It is faster by orders of magnetude to do read/write on the RAM than on the disk.
+The RAM is the Random Access Memory that is basically where any process on a computer runs. The RAM also holds the heap, the stack and the data of any process while it runs. In opposition to the disk where files and other software entities persist after a shutdown, the RAM starts from 0 every time. Why use the RAM then? It is faster by orders of magnetude to do read/write on the RAM than on the disk.
 
 Now that we covered quickly what the RAM is, we can get an idea of what is an address: it simply is where a byte in the RAM is stored. The 32 in x86_32 means that our registers cannot take data wider than 32 bits (SIMD aside). Which means that our address are 32 bits wide and that explains the UINT_MAX limit it has. The address space is the totality of the addresses between 0 and UINT_MAX.
 
