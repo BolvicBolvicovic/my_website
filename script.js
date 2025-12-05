@@ -139,8 +139,6 @@ const	FS = Object.freeze({
 	]
 });
 
-// TODO: delete this for prod
-document.getElementById("stylesheet").href = "style.css?v=" + new Date().getTime();
 
 const	reader					= document.getElementById("reader");
 const	reader_output				= document.getElementById("reader-output");
