@@ -164,7 +164,7 @@ I specialized in Kernel and System programming at 42, and I'm currently expandin
 Before learing how to code, I did various things.
 In highschool, I was mainly studying science but I bifurcated right at the start of my college years. I wanted to become a writer. I went to an intensive course for literature called "prépa". Then I went to la Sorbonne University to continue in the field of literature. I found out that I did not like the environment and instead I started to work in a museum's bookshop.
 
-As I was missing out logical thinking from my time in highschool, I dedided to give coding a shot and found out there was a 42 school opening in Le Havre: I moved there and this is how my journey as a software developer started.
+As I was missing out logical thinking from my time in highschool, I decided to give coding a shot and found out there was a 42 school opening in Le Havre: I moved there and this is how my journey as a software developer started.
 
 <span style="color: ${green};">What drives me: curiosity and passion</span>
 I spend most of my time exploring new concepts and building software. When I'm not coding, you'll find me with a book — some favorites include The Old Man and the Sea, The Brothers Karamazov, and The Master and Margarita.
