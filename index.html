@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Victor Cornille</title>
+	<link id="stylesheet" rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<div id="terminal">
+		<div id="terminal-output">
+			<div id="terminal-output-welcome">
+				<span id="terminal-output-welcome-message"></span>
+				<div id="terminal-image-container">
+					<img class="profile-picture" src="https://avatars.githubusercontent.com/u/141677124?v=4"></img>
+				</div>
+
+			</div>
+		</div>
+		<div class="input-line">
+			<span id="terminal-input-prompt"></span>
+			<span
+				id="terminal-input"
+				contenteditable="true"
+				spellcheck="false"
+				autocorrect="off"
+				autocapitalize="off"></span>
+		</div>
+	</div>
+
+	<div id="reader" style="display: none;" tabindex="0">
+		<span id="reader-output"></span>
+		<div 
+		      id="reader-disclaimer"
+		>
+			<span>press '</span>
+			<span style="color: red;">q</span>
+			<span>' to </span>
+			<span style="color: red;">quit</span>
+			<a style="color: #50fa7b" href="/"> (go back)</a>
+		</div>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+</html>

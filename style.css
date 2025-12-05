@@ -1,0 +1,133 @@
+.text-block {
+	max-width: 800px;
+}
+
+.input-line {
+	display: flex;
+	align-items: center;
+}
+
+.profile-picture {
+	border-radius: 360px;
+	position: absolute;
+	top: 200px;
+	left: 750px;
+	max-width: 250px;
+	max-height: 250px;
+}
+
+html, body {
+	font-family: JetBrains Mono, monospace;
+	font-size: 16px;
+	color: white;
+	background-color: #111111;
+	border: 1px solid #333333;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+pre {
+	background: #1e1e1e;
+	color: #dcdcdc;
+	padding: 1rem;
+	border-radius: 6px;
+	overflow-x: auto;
+	max-width: 800px;
+}
+
+code {
+	font-family: "Fira Code", "Consolas", monospace;
+}
+
+#terminal, #reader {
+	padding: 10px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	text-align: left;
+	white-space: pre;
+}
+
+#reader {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+#reader-output {
+	padding-bottom: 56px;
+}
+
+#reader-disclaimer {
+	white-space: normal;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	padding: 10px;
+	background-color: #111111;
+	border-top: 1px solid #333333;
+}
+
+#terminal-input {
+	outline: none;
+	flex: 1;
+	caret-shape: block;
+	caret-color: white;
+}
+
+#terminal-output-welcome {
+	display: flex;
+	flex-direction: row;
+}
+#terminal-output-welcome-message {
+	width: 50%;
+}
+
+#terminal-image-container {
+	width: 50%;
+	display: flex;
+}
+
+@media (max-width: 920px) {
+	.profile-picture {
+		position: static;
+		right: 0px;
+		top: 0px;
+		max-width: 250px;
+		max-height: 250px;
+	}
+
+	#terminal-output-welcome {
+		flex-direction: column-reverse;
+		white-space: pre-wrap;
+	}
+
+	#terminal-output-welcome-message {
+		width: 100%;
+	}
+
+	#terminal-image-container {
+		width: 100%;
+		justify-content: center;
+		align-items: center;
+
+	}
+}
+
+@media (max-width: 600px) {
+	html, body {
+		font-size: 8px;
+	}
+
+	#reader {
+		font-size: 12px;
+	}
+
+	#reader-output {
+		padding-bottom: 48px;
+	}
+}
