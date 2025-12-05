@@ -648,15 +648,29 @@ function	handle_path_hash() {
 
 	const	no_hash_hash	= hash.replace("#", "");
 	const	path		= no_hash_hash.split("/");
-	const	unsafe_file	= get_file(path);
+	let	unsafe_file	= get_file(path);
 
-	if (unsafe_file === unknown_file) {
-		if (path.length !== 0 && path[-1] !== current_dir.pwd)
-			cd(get_dir(path, FS), no_hash_hash);
+	if (unsafe_file !== unknown_file) {
+		open_reader(unsafe_file, no_hash_hash, "");
 		return;
 	}
 
-	open_reader(unsafe_file, no_hash_hash, "");
+	if (path.length === 0) {
+		cd(FS, "");
+		return;
+	}
+
+	const	dir = get_dir(path, FS);
+
+	if (dir !== unknown_directory) {
+		cd(dir, no_hash_hash);
+		return;
+	}
+	
+	unsafe_file = get_file(path);
+
+	if (unsafe_file === unknown_file) cd(FS, "");
+	else open_reader(unsafe_file, no_hash_hash, "");
 }
 
 /* Name: build_line_tag
