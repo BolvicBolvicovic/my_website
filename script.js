@@ -341,7 +341,7 @@ const	file_portfolio_kfs	= `
 The suite is composed of 10 projects, each one of them adding a new functionality to the kernel. I have validated the 4th first and finished the 5th.</div>
 <h3>Introduction</h3>
 <h4>Emulation</h4>
-<div class="text-block">We are free to choose whatever software for emulating the device that will run the kernel. It is proposed to use KVM but I opted for <a href="https://www.qemu.org/">QEMU</a> as I thought it was easy to use when I started the project. Probebly that a tutorial that I found on <a href="https://wiki.osdev.org/Expanded_Main_Page">OSDev</a> used it and I did the same.</div>
+<div class="text-block">We are free to choose whatever software for emulating the device that will run the kernel. It is proposed to use KVM but I opted for <a href="https://www.qemu.org/">QEMU</a> as I thought it was easy to use when I started the project. Probably that a tutorial that I found on <a href="https://wiki.osdev.org/Expanded_Main_Page">OSDev</a> used it and I did the same.</div>
 <h4>Language</h4>
 <div class="text-block">Just like for the emulation software, we are free to choose the language we want. C is the default option as it does not need anything special to make its base features work. C++ has new and delete keywords that cannot be used (and I am not the biggest fan of C++ anyway). Rust seems attractive but most of the information online is written for C/C++. I have no knowledge of Zig. So I decided to go for C with some ASM stubs here and there.</div>
 <h4>Toolchain</h4>
