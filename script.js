@@ -170,7 +170,7 @@ As I was missing out logical thinking from my time in highschool, I decided to g
 I spend most of my time exploring new concepts and building software. When I'm not coding, you'll find me with a book — some favorites include The Old Man and the Sea, The Brothers Karamazov, and The Master and Margarita.
 
 <span style="color: ${green};">What I'm working on: embedded systems</span>
-Right now, I'm focused on understanding the intrinsect of IoT by learning how the software interacts with the WiFi related hardware and becoming fluent in Swedish.
+Right now, I'm focused on understanding the intricacies of IoT by learning how the software interacts with the WiFi related hardware and becoming fluent in Swedish.
 
 <span style="color: ${green};">Why am I in Sweden: </span><span style="color: red;">Love</span>
 
