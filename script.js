@@ -457,7 +457,7 @@ In Real Mode, an address has two part:
 	- a segment
 	- an offset into that segment
 
-And that's it. It points directly to physical memory without any protection of any kind. It means that any process can access that memory. It uses the concept of segmentation which I talked about previously in the <a href="#portfolio/kfs/gdt-stack">GDT section</a>. It is depracated and in facts, when the bootloader runs the _start function, it has already done the switch to protected mode.
+And that's it. It points directly to physical memory without any protection of any kind. It means that any process can access that memory. It uses the concept of segmentation which I talked about previously in the <a href="#portfolio/kfs/gdt-stack">GDT section</a>. It is deprecated and in facts, when the bootloader runs the _start function, it has already done the switch to protected mode.
 
 In Protected mode, an address is made of three parts:
 	- an index in the page directory
