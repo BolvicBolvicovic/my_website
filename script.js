@@ -599,7 +599,7 @@ const	saved_history_head	= localStorage.getItem("history_head");
 const	saved_directory		= localStorage.getItem("current_dir");
 const	saved_hints_enabled	= localStorage.getItem("hints_enabled");
 
-const	unsafe_directory	= get_dir(saved_directory.split("/"), FS);
+const	unsafe_directory	= saved_directory ? get_dir(saved_directory.split("/"), FS) : FS;
 /* VARIABLES */
 
 let	current_dir		= unsafe_directory !== unknown_directory ? unsafe_directory : FS;
