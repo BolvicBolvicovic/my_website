@@ -9,9 +9,9 @@
 
 .profile-picture {
 	border-radius: 360px;
-	position: relative;
-	right: 150px;
-	top: 150px;
+	position: absolute;
+	top: 200px;
+	left: 750px;
 	max-width: 250px;
 	max-height: 250px;
 }
@@ -93,6 +93,14 @@ code {
 }
 
 @media (max-width: 920px) {
+	.profile-picture {
+		position: static;
+		right: 0px;
+		top: 0px;
+		max-width: 250px;
+		max-height: 250px;
+	}
+
 	#terminal-output-welcome {
 		flex-direction: column-reverse;
 		white-space: pre-wrap;
@@ -107,13 +115,6 @@ code {
 		justify-content: center;
 		align-items: center;
 
-	}
-
-	.profile-picture {
-		right: 0px;
-		top: 0px;
-		max-width: 250px;
-		max-height: 250px;
 	}
 }
 

@@ -521,10 +521,33 @@ Now that you have an understanding of what paging is, let's dig down on how all 
 <h4>Physical Memory Manager</h4>
 <div class="text-block">Before handling the virtual memory, we need to be able to handle physical memory, meaning to map it into some smaller abstraction, one where a byte must be represented by something smaller. I have 32GB of RAM, I don't want to use these 32GB to map themselves.
 
-One way to do that is to use a bitmap. I turns the size of our map from 32GB to 4GB. Much better but as I mentionned earlier, we only have 4GB of virtual memory which some belongs to the user process.
+Furthermore, as I mentioned earlier, we are limited by our 32 bits data representations which makes the maximum 4GB and not 32.
 
-To solve that problem, we can take advantage of the size of a page. A page maps 4KB of memory. We can decide that 1 bit of our bitmap maps a frame of 4KB. If the bit is set, the frame is allocated. Otherwise, it is not.
-We go from 4GB to 1GB. Furthermore, as I mentioned earlier, we are limited by our 32 bits data representations which makes the maximum 4GB and the map 125MB, which is easily handled by the paging mechanism.</div>
+One way to do that is to use a bitmap. It turns the size of our map from 4GB to 500MB. Much better but as I mentionned earlier, we only have 4GB of virtual memory which some belongs to the user process and we want to minimize that cost.
+
+To solve that problem, we can take advantage of the size of a page. A page maps 4KB of memory. We can decide that 1 bit of our bitmap maps a frame of 4KB. If the bit is set, the frame is allocated. Otherwise, it is not. We go from 500MB to 125MB, which is easily handled by the paging system.</div>
+
+Turning bits into actual address is now trivial:
+<pre><code>// memory/pmm/pmm.c
+
+#define	PAGE_SIZE	0x1000				// 4KB
+#define PMM_BLOCK_SIZE	PAGE_SIZE
+
+// ...
+
+int	frame = mmap_find_first_free_s(nb_blocks);	// returns an index of the bitmap or -1
+
+if (frame == -1) return 0;				// Return null address on error
+
+for (size_t i = 0; i < nb_blocks; i++)
+{
+	mmap_set(frame + i);				// Set each frame in the map
+}
+
+_memory_used_blocks += nb_blocks;			// Counting the allocated space for boundry purpose
+
+return (unsigned int)(frame * PMM_BLOCK_SIZE);		// Creating the address based on PMM_BLOCK_SIZE
+</code></pre>
 <h4>Virtual Memory Manager</h4>
 <div class="text-block">// TODO</div>
 <h4>Memory allocators</h4>
@@ -592,31 +615,28 @@ let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null
 /* HELPERS */
 
 /* Name: autocomplete
- * Description: takes two strings as arguments.
- * Uses strstr algo to find the needle haystack and slice the word if found else returns "".
+ * Description: takes a string and an array of string as arguments.
+ * Finds the needle in the haystack else returns "".
  * Return type: string
  * */
 function	autocomplete(needle, haystack) {
-	// TODO: handle autocompletion of dirs (i.e. posts/br -> post/branchless)
-	const	max_len = haystack.length - needle.length;
+	const	matches = haystack.filter(w => w.startsWith(needle));
 
-	for (let i = 0; i < max_len; i++) {
-		let j = 0;
-		for (; j < needle.length; j++) {
-			if (needle[j] !== haystack[j + i]) break;
-		}
+	if (matches.length === 0) return "";
+	if (matches.length === 1) return matches[0].slice(needle.length);
 
-		if (j == needle.length) {
-			let	res = "";
+	let	prefix = matches[0];
 
-			for (j += i; j < haystack.length && haystack[j] != " "; j++) {
-				res += haystack[j];
-			}
-			return res;
-		}
+	for (let i = 1; i < matches.length; i++) {
+		const	word	= matches[i];
+		let	j	= 0;
+
+		for(; j < prefix.length && j < word.length && prefix[j] === word[j]; j++);
+
+		prefix = prefix.slice(0, j);
 	}
 
-	return "";
+	return prefix.slice(needle.length);
 }
 
 /* Name: handle_path_hash
@@ -626,19 +646,19 @@ function	autocomplete(needle, haystack) {
 function	handle_path_hash() {
 	const	hash = window.location.hash;
 	
-	if (hash) {
-		const	no_hash_hash	= hash.replace("#", "");
-		const	path		= no_hash_hash.split("/");
-		const	unsafe_file	= get_file(path);
+	if (!hash) return;
 
-		if (unsafe_file === unknown_file) {
-			if (path.length !== 0 && path[-1] !== current_dir.pwd)
-				cd(get_dir(path, FS), no_hash_hash);
-			return;
-		}
+	const	no_hash_hash	= hash.replace("#", "");
+	const	path		= no_hash_hash.split("/");
+	const	unsafe_file	= get_file(path);
 
-		open_reader(unsafe_file, no_hash_hash, "");
+	if (unsafe_file === unknown_file) {
+		if (path.length !== 0 && path[-1] !== current_dir.pwd)
+			cd(get_dir(path, FS), no_hash_hash);
+		return;
 	}
+
+	open_reader(unsafe_file, no_hash_hash, "");
 }
 
 /* Name: build_line_tag
@@ -799,15 +819,14 @@ function	toggle_hints() {
 function	clear() {
 	terminal_output.innerHTML = "";
 
-	if (hints_enabled) {
-		return "\nHint: You have cleared the terminal. You cannot scroll back. If you wish to see the welcome message, reload the page.";
-	}
-
-	return "";
+	if (!hints_enabled) return "";
+	
+	return "\nHint: You have cleared the terminal. You cannot scroll back. If you wish to see the welcome message, reload the page.";
 }
 
 /* Name: ls
- * Description: prints the list of all files and folders in the chosen directory. Defaults to current_dir.
+ * Description: returns the list of all files and folders in the chosen directory.
+ * Defaults to current_dir.
  * Usage: ls <DIR>
  * */
 function	ls(dir, mode) {
@@ -816,16 +835,20 @@ function	ls(dir, mode) {
 
 	let	fs_list = [...dir.files];
 
-	switch (mode) {
-		case 1: // Note: file mode
-			return fs_list.join(" ");
-		case 2: // Note: dir mode
-			let	dirs = [];
-			for (let i = 0; i < dir.dir.length; i++) {
-				dirs.push(dir.dir[i].pwd);
-			}
+	if (mode === 1) {
+		for (let i = 0; i < dir.dir.length; i++) {
+			fs_list.push(dir.dir[i].pwd);
+		}
 
-			return dirs.join(" ");
+		return fs_list.join(" ");
+	} else if (mode === 2) {
+		let	dirs = [];
+
+		for (let i = 0; i < dir.dir.length; i++) {
+			dirs.push(dir.dir[i].pwd);
+		}
+
+		return dirs.join(" ");
 	}
 
 	for (let i = 0; i < dir.dir.length; i++) {
@@ -835,16 +858,15 @@ function	ls(dir, mode) {
 	
 	// TODO: find a way to make the color work with the sort.
 	// fs_list.sort();
-	if (hints_enabled)
-		return fs_list.join(" ") + `
+	if (!hints_enabled) return fs_list.join(" ");
+
+	return fs_list.join(" ") + `
 
 Hint: You have listed the content of <span style="color: ${dusty_blue};">${dir.pwd}</span>.
 <span style="color: ${dusty_blue}">Folders</span> are in blue and files are in white.
 You can choose to read a file by typing <span style="color: ${yellow};">read name_of_the_file</span> or move to a folder by typing <span style="color: ${yellow};">cd name_of_the_folder</span>.
 Do not forget to hit enter to execute the command!
  `;
-
-	return fs_list.join(" ");
 }
 
 /* Name: cd
@@ -860,15 +882,15 @@ function	cd(dir, not_split_path) {
 	window.location.hash = not_split_path;
 	localStorage.setItem("current_dir", not_split_path);
 
-	if (hints_enabled)
-		return `
+	if (!hints_enabled) return "";
+	
+	return `
 Hint: You have moved to <span style="color: ${dusty_blue};">${dir.pwd}</span>.
 You can see the current folder you are in by looking at the last word of ${terminal_input_prompt.textContent}.
 You can choose to list everything in the folder by typing <span style="color: ${yellow};">ls</span> or you can read/open a file by typing <span style="color: ${yellow};">read name_of_the_file</span>.
 Do not forget to hit enter to execute the command!
  `;
 
-	return "";
 }
 
 /* Name: open_reader
@@ -996,15 +1018,17 @@ window.addEventListener("hashchange", handle_path_hash);
 reader.addEventListener("click", () => {
 	const	selection = window.getSelection();
 
-	if (selection.toString().length === 0 && reading)
-		reader.focus();
+	if (selection.toString().length !== 0 && reading) return;
+	
+	reader.focus();
 });
 
 terminal.addEventListener("click", (e) => {
 	const	selection = window.getSelection();
 
-	if (selection.toString().length === 0 && !reading)
-		terminal_input.focus();
+	if (selection.toString().length !== 0 && reading) return;
+	
+	terminal_input.focus();
 });
 
 if (!is_mobile) {
@@ -1039,18 +1063,32 @@ terminal_input.addEventListener("keydown", (e) => {
 
 		const	response_line	= document.createElement("div");
 		const	command_line	= document.createElement("div");
-		const	ls_res		= ls(current_dir, ls_mode);
+		let	ls_res;
 
 		if (parsed_cmd.length == 2) {
-			command += autocomplete(parsed_cmd[1], ls_res);
-			terminal_input.innerText = command;
+			const	path	= parsed_cmd[1].split("/");
+			const	dir_path= path.length > 1 ? path.slice(0, -1) : path;
+			const	dir	= get_dir(dir_path, current_dir);
+			let	new_cmd;
+
+			if (dir === unknown_directory) {
+				ls_res = ls(current_dir, ls_mode);
+				new_cmd = command + autocomplete(parsed_cmd[1], ls_res.split(" "));
+			} else {
+				ls_res = ls(dir, ls_mode);
+				new_cmd = command + autocomplete(path[path.length - 1], ls_res.split(" "));
+			}
+			terminal_input.innerText = new_cmd;
 			place_caret_at_end(terminal_input);
+		} else {
+			ls_res = ls(current_dir, ls_mode);
 		}
 		command_line.textContent= terminal_input_prompt.textContent + command; 
 		terminal_output.appendChild(command_line);
 		response_line.innerHTML = ls_res;
 		terminal_output.appendChild(response_line);
 		terminal.scrollTop = terminal.scrollHeight;
+		return;
 	}
 
 	if (e.key === "Enter") {
@@ -1067,19 +1105,20 @@ terminal_input.addEventListener("keydown", (e) => {
 		command_line.textContent= terminal_input_prompt.textContent + command; 
 		terminal_output.appendChild(command_line);
 
-		if (command) {
-			response_line = document.createElement("div");
+		if (!command) return;
 
-			history.pushBack(command);
-			response_line.innerHTML = run_command(command);
-			terminal_output.appendChild(response_line);
-			terminal_input.innerText = "";
+		response_line = document.createElement("div");
 
-			localStorage.setItem("history", JSON.stringify(history.toArray()));
-			localStorage.setItem("history_head", history.head);
-		}
-		
+		history.pushBack(command);
+		response_line.innerHTML = run_command(command);
+		terminal_output.appendChild(response_line);
+		terminal_input.innerText = "";
+
+		localStorage.setItem("history", JSON.stringify(history.toArray()));
+		localStorage.setItem("history_head", history.head);
+
 		terminal.scrollTop = terminal.scrollHeight;
+		return;
 	}
 	
 	if (e.key === "ArrowUp") {
@@ -1087,10 +1126,11 @@ terminal_input.addEventListener("keydown", (e) => {
 
 		const	previous_command = history.readPrevious();
 
-		if (previous_command !== null) {
-			terminal_input.innerText = previous_command;
-			place_caret_at_end(terminal_input);
-		}
+		if (previous_command === null) return;
+
+		terminal_input.innerText = previous_command;
+		place_caret_at_end(terminal_input);
+		return;
 	}
 
 	if (e.key === "ArrowDown") {
@@ -1105,6 +1145,7 @@ terminal_input.addEventListener("keydown", (e) => {
 		}
 
 		place_caret_at_end(terminal_input);
+		return;
 	}
 });
 
