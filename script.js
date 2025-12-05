@@ -736,7 +736,7 @@ function	run_command(line) {
 		case "latest":
 			return latest();
 		case "read":
-			return open_reader(get_file(path), args, current_dir.pwd)
+			return open_reader(get_file(path), args, current_dir.pwd);
 		case "ls":
 			if (args == "") return ls(current_dir, 0);
 			return ls(get_dir(path, current_dir), 0);
