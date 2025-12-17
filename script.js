@@ -614,6 +614,7 @@ let	history			= saved_history
 					? RingBuffer.fromArray(JSON.parse(saved_history), history_head)
 					: new RingBuffer();
 let	reading			= false;
+let	disable_handle_path_hash= false;
 let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
 
 /* HELPERS */
@@ -650,6 +651,11 @@ function	autocomplete(needle, haystack) {
 function	handle_path_hash() {
 	const	hash = window.location.hash;
 	
+	if (disable_handle_path_hash) {
+		disable_handle_path_hash = false;
+		return;
+	}
+
 	if (!hash) return;
 
 	const	no_hash_hash	= hash.replace("#", "");
@@ -897,6 +903,7 @@ function	cd(dir, not_split_path) {
 
 	current_dir = dir;
 	terminal_input_prompt.textContent = build_line_tag();
+	disable_handle_path_hash	= true;
 	window.location.hash = not_split_path;
 	localStorage.setItem("current_dir", not_split_path);
 
@@ -944,6 +951,7 @@ function	close_reader() {
 	reader_output.innerHTML = "";
 	terminal_input.contentEditable = true;
 	terminal_input.focus();
+	disable_handle_path_hash = true;
 	window.location.hash = current_dir.pwd;
 }
 
