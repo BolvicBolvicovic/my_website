@@ -562,6 +562,12 @@ return (unsigned int)(frame * PMM_BLOCK_SIZE);		// Creating the address based on
 <div class="text-block">// TODO</div>
 <h4>Preemptive Multitasking</h4>
 <div class="text-block">// TODO</div>
+<h4>Memory Manager per Task and TSS</h4>
+<div class="text-block">// TODO</div>
+<h4>Inter Process Communication (IPC)</h4>
+<div class="text-block">// TODO</div>
+<h4>Task Signal</h4>
+<div class="text-block">// TODO</div>
 
 <div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/kfs">project</a>.
 You can contact me at victor.cornille@gmail.com.
