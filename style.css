@@ -92,12 +92,9 @@ code {
 	width: 50%;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1080px) {
 	.profile-picture {
-		position: static;
-  		transform: translate(22%);
-		max-width: 250px;
-		max-height: 250px;
+		display: none;
 	}
 
 	#terminal-output-welcome {
@@ -110,10 +107,7 @@ code {
 	}
 
 	#terminal-image-container {
-		width: 100%;
-		justify-content: center;
-		align-items: center;
-
+		display: none;
 	}
 }
 
