@@ -15,7 +15,7 @@
 	border-radius: 360px;
 	position: absolute;
 	top: 150px;
-	left: -150px;
+	left: 0px;
 	max-width: 250px;
 	max-height: 250px;
 }
@@ -116,15 +116,19 @@ code {
 	}
 }
 
-@media (max-width: 600px) {
-	html, body {
+@media (max-width: 735px) {
+	#terminal {
+		white-space: pre-wrap;
 	}
 
-	#terminal {
-		transform: scale(0.5);
-		transform-origin: left top;
-		width: 200%;
-		height: 200%;
+	#terminal-output-spans {
+		display: grid;
+		grid-template: 200px 1fr;
+	}
+
+	#terminal-output-name-ascii {
+		font-size: 8px;
+		transform: translateY(-10px);
 	}
 
 	#reader {

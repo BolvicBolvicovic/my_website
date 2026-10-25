@@ -89,9 +89,9 @@ class	RingBuffer {
 
 /* CONSTANTS */
 const	dusty_blue = "#7eb3d4";
-const	yellow = "#f1fa8c";
-const	green = "#50fa7b";
-const	welcome_message = `
+const	yellow     = "#f1fa8c";
+const	green      = "#50fa7b";
+const	name_ascii = `
   _                                 ___                        _   _
  (_|   |_/o                        / (_)                   o  | | | |
    |   |      __ _|_  __   ,_     |      __   ,_    _  _      | | | |  _
@@ -99,6 +99,9 @@ const	welcome_message = `
     \\_/   |_/\\___/|_/\\__/    |_/   \\___/\\__/    |_/  |  |_/|_/|__/|__/|__/
 
 
+`;
+
+const	welcome_message = `
 Welcome to my interactive portfolio/blog.
 If you do not have the time to interact, click <a href="#whoami" style="color: ${green};">here</a> to see who I am.
 
@@ -144,6 +147,7 @@ const	reader					= document.getElementById("reader");
 const	reader_output				= document.getElementById("reader-output");
 const	terminal				= document.getElementById("terminal");
 const	terminal_output				= document.getElementById("terminal-output");
+const	terminal_input_output_name_ascii	= document.getElementById("terminal-output-name-ascii");
 const	terminal_input_output_welcome_message	= document.getElementById("terminal-output-welcome-message");
 const	terminal_input				= document.getElementById("terminal-input");
 const	terminal_input_prompt			= document.getElementById("terminal-input-prompt");
@@ -689,10 +693,18 @@ function	handle_path_hash() {
  * Return type: string
  * */
 function	build_line_tag() {
-	const	line_tag_start	= "[victor_cornille@my_website ";
-	const	line_tag_end	= "]$ ";
+	const	line_tag_start_laptop	= "[victor_cornille@my_website ";
+	const	line_tag_start_mobile	= "[victor@cornille ";
+	const	line_tag_end		= "]$ ";
 
-	return line_tag_start + (current_dir.pwd !== "" ? current_dir.pwd : "/") + line_tag_end;
+	if (is_mobile)
+	{
+		return line_tag_start_mobile + (current_dir.pwd !== "" ? current_dir.pwd : "/") + line_tag_end;
+	}
+	else
+	{
+		return line_tag_start_laptop + (current_dir.pwd !== "" ? current_dir.pwd : "/") + line_tag_end;
+	}
 }
 
 /* Name: get_dir
@@ -1036,6 +1048,7 @@ function	help(arg) {
 const commands = ["latest", "ls", "cd", "read", "toggle_hints", "clear", "clear_cache", "help"];
 
 /* INIT MAIN */
+terminal_input_output_name_ascii.innerHTML	= name_ascii;
 terminal_input_output_welcome_message.innerHTML	= welcome_message;
 terminal_input_prompt.textContent		= build_line_tag();
 
