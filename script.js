@@ -618,15 +618,6 @@ let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null
 
 /* HELPERS */
 
-/* Name: scroll_down
- * Description: scroll_down to the input line.
- * */
-function scroll_down() {
-	const line = document.querySelector(".input-line");
-	line.scrollIntoView({ block: "end" });
-	//requestAnimationFrame(() => line.scrollIntoView({ block: "end" }));
-}
-
 /* Name: autocomplete
  * Description: takes a string and an array of string as arguments.
  * Finds the needle in the haystack else returns "".
@@ -1139,7 +1130,7 @@ terminal_input.addEventListener("keydown", (e) => {
 		terminal_output.appendChild(command_line);
 		response_line.innerHTML = ls_res;
 		terminal_output.appendChild(response_line);
-		scroll_down();
+		terminal.scrollTop = terminal.scrollHeight;
 		return;
 	}
 
@@ -1159,7 +1150,7 @@ terminal_input.addEventListener("keydown", (e) => {
 
 		if (!command) 
 		{
-			scroll_down();
+			terminal.scrollTop = terminal.scrollHeight;
 			return;
 		}
 
@@ -1173,7 +1164,7 @@ terminal_input.addEventListener("keydown", (e) => {
 		localStorage.setItem("history", JSON.stringify(history.toArray()));
 		localStorage.setItem("history_head", history.head);
 
-		scroll_down();
+		terminal.scrollTop = terminal.scrollHeight;
 		return;
 	}
 
