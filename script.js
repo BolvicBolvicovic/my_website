@@ -76,7 +76,7 @@ class	RingBuffer {
 
 	readNext() {
 		if (!this.count || this.readHead === this.head) return null;
-			
+
 		const	next = (this.readHead + 1) % this.size;
 
 		this.readHead = next;
@@ -147,7 +147,6 @@ const	terminal_output				= document.getElementById("terminal-output");
 const	terminal_input_output_welcome_message	= document.getElementById("terminal-output-welcome-message");
 const	terminal_input				= document.getElementById("terminal-input");
 const	terminal_input_prompt			= document.getElementById("terminal-input-prompt");
-
 const	is_mobile				= /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 /* FILES */
@@ -611,13 +610,22 @@ const	unsafe_directory	= saved_directory ? get_dir(saved_directory.split("/"), F
 let	current_dir		= unsafe_directory !== unknown_directory ? unsafe_directory : FS;
 let	history_head		= saved_history_head ? saved_history_head : 0;
 let	history			= saved_history
-					? RingBuffer.fromArray(JSON.parse(saved_history), history_head)
-					: new RingBuffer();
+	? RingBuffer.fromArray(JSON.parse(saved_history), history_head)
+	: new RingBuffer();
 let	reading			= false;
 let	disable_handle_path_hash= false;
 let	hints_enabled		= saved_hints_enabled === "1" || saved_hints_enabled === null;
 
 /* HELPERS */
+
+/* Name: scroll_down
+ * Description: scroll_down to the input line.
+ * */
+function scroll_down() {
+	const line = document.querySelector(".input-line");
+	line.scrollIntoView({ block: "end" });
+	//requestAnimationFrame(() => line.scrollIntoView({ block: "end" }));
+}
 
 /* Name: autocomplete
  * Description: takes a string and an array of string as arguments.
@@ -650,7 +658,7 @@ function	autocomplete(needle, haystack) {
  * */
 function	handle_path_hash() {
 	const	hash = window.location.hash;
-	
+
 	if (disable_handle_path_hash) {
 		disable_handle_path_hash = false;
 		return;
@@ -678,7 +686,7 @@ function	handle_path_hash() {
 		cd(dir, no_hash_hash);
 		return;
 	}
-	
+
 	unsafe_file = get_file(path);
 
 	if (unsafe_file === unknown_file) cd(FS, "");
@@ -692,7 +700,7 @@ function	handle_path_hash() {
 function	build_line_tag() {
 	const	line_tag_start	= "[victor_cornille@my_website ";
 	const	line_tag_end	= "]$ ";
-	
+
 	return line_tag_start + (current_dir.pwd !== "" ? current_dir.pwd : "/") + line_tag_end;
 }
 
@@ -704,9 +712,9 @@ function	build_line_tag() {
 function	get_dir(path, dir) {
 	if (path.length === 0)
 		return dir; 
-	
+
 	const	first_dir	= path[0];
-	
+
 	if (first_dir === dir.pwd || first_dir === "")
 		return get_dir(path.slice(1), dir);
 
@@ -755,7 +763,7 @@ function	run_command(line) {
 	const	command		= split_line[0];
 	const	args		= split_line.slice(1).join(" ");
 	const	path		= args.split("/");
-	
+
 	switch (command) {
 		case "clear_cache":
 			return clear_cache();
@@ -787,8 +795,8 @@ function	run_command(line) {
  * Return type: none
  * */
 function	place_caret_at_end(node) {
-// Note: .focus() puts the cursor at the end when you click under the input
-// and at the start when you click over the input.
+	// Note: .focus() puts the cursor at the end when you click under the input
+	// and at the start when you click over the input.
 	node.focus();
 
 	const	range		= document.createRange();
@@ -844,7 +852,7 @@ function	clear() {
 	terminal_output.innerHTML = "";
 
 	if (!hints_enabled) return "";
-	
+
 	return "\nHint: You have cleared the terminal. You cannot scroll back. If you wish to see the welcome message, reload the page.";
 }
 
@@ -879,7 +887,7 @@ function	ls(dir, mode) {
 		const	colored_dir = `<span style="color: ${dusty_blue};">${dir.dir[i].pwd}</span>`;
 		fs_list.push(colored_dir);
 	}
-	
+
 	// TODO: find a way to make the color work with the sort.
 	// fs_list.sort();
 	if (!hints_enabled) return fs_list.join(" ");
@@ -908,7 +916,7 @@ function	cd(dir, not_split_path) {
 	localStorage.setItem("current_dir", not_split_path);
 
 	if (!hints_enabled) return "";
-	
+
 	return `
 Hint: You have moved to <span style="color: ${dusty_blue};">${dir.pwd}</span>.
 You can see the current folder you are in by looking at the last word of ${terminal_input_prompt.textContent}.
@@ -937,7 +945,7 @@ function	open_reader(file, path, file_pwd) {
 	reader.focus();
 
 	window.location.hash = (file_pwd !== "" ? file_pwd + "/" : "") + path;
-	
+
 	return "";
 }
 
@@ -1034,6 +1042,8 @@ function	help(arg) {
 	}
 }
 
+const commands = ["latest", "ls", "cd", "read", "toggle_hints", "clear", "clear_cache", "help"];
+
 /* INIT MAIN */
 terminal_input_output_welcome_message.innerHTML	= welcome_message;
 terminal_input_prompt.textContent		= build_line_tag();
@@ -1045,7 +1055,7 @@ reader.addEventListener("click", () => {
 	const	selection = window.getSelection();
 
 	if (selection.toString().length !== 0 && reading) return;
-	
+
 	reader.focus();
 });
 
@@ -1053,7 +1063,7 @@ terminal.addEventListener("click", (e) => {
 	const	selection = window.getSelection();
 
 	if (selection.toString().length !== 0 && reading) return;
-	
+
 	terminal_input.focus();
 });
 
@@ -1083,8 +1093,24 @@ terminal_input.addEventListener("keydown", (e) => {
 			case "read":
 				ls_mode = 1;
 				break;
+			case "help":
+				if (parsed_cmd.length === 2)
+				{
+					terminal_input.innerText = command + autocomplete(parsed_cmd[1], commands);
+					place_caret_at_end(terminal_input);
+					return;
+				}
+				break;
+			default: 
+				if (parsed_cmd.length === 1)
+				{
+					terminal_input.innerText = command + autocomplete(parsed_cmd[0], commands);
+					place_caret_at_end(terminal_input);
+					return;
+				}
+				break;
 		}
-		
+
 		if (ls_mode === 0) return;
 
 		const	response_line	= document.createElement("div");
@@ -1113,7 +1139,7 @@ terminal_input.addEventListener("keydown", (e) => {
 		terminal_output.appendChild(command_line);
 		response_line.innerHTML = ls_res;
 		terminal_output.appendChild(response_line);
-		terminal.scrollTop = terminal.scrollHeight;
+		scroll_down();
 		return;
 	}
 
@@ -1131,7 +1157,11 @@ terminal_input.addEventListener("keydown", (e) => {
 		command_line.textContent= terminal_input_prompt.textContent + command; 
 		terminal_output.appendChild(command_line);
 
-		if (!command) return;
+		if (!command) 
+		{
+			scroll_down();
+			return;
+		}
 
 		response_line = document.createElement("div");
 
@@ -1143,10 +1173,10 @@ terminal_input.addEventListener("keydown", (e) => {
 		localStorage.setItem("history", JSON.stringify(history.toArray()));
 		localStorage.setItem("history_head", history.head);
 
-		terminal.scrollTop = terminal.scrollHeight;
+		scroll_down();
 		return;
 	}
-	
+
 	if (e.key === "ArrowUp") {
 		e.preventDefault();
 

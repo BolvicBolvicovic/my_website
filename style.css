@@ -1,3 +1,7 @@
+*, *::before, *::after {
+	box-sizing: border-box;
+}
+
 .text-block {
 	max-width: 800px;
 }
@@ -39,7 +43,7 @@ pre {
 }
 
 code {
-	font-family: "Fira Code", "Consolas", monospace;
+	font-family: "JetBrainsMono Nerd Font", "Fira Code", "Consolas", monospace;
 }
 
 #terminal, #reader {
