@@ -175,12 +175,12 @@ As I was missing out logical thinking from my time in highschool, I decided to g
 I spend most of my time exploring new concepts and building software. When I'm not coding, you'll find me with a book — some favorites include The Old Man and the Sea, The Brothers Karamazov, and The Master and Margarita.
 
 <span style="color: ${green};">What I'm working on: embedded systems</span>
-Right now, I'm focused on understanding the intricacies of IoT by learning how the software interacts with the WiFi related hardware and becoming fluent in Swedish.
+Right now, I'm focused on understanding the intricacies of CAN interfaces and testing with real-time operating systems at Knowit AB.
 
 <span style="color: ${green};">Why am I in Sweden: </span><span style="color: red;">Love</span>
 
 <span style="color: ${dusty_blue};">Want to connect?</span>
-Check out my projects in the portfolio folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
+Check out my projects in the <a href="https://bolvicbolvicovic.github.io/my_website/#portfolio">portfolio</a> folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
 You can mail me at victor.corhem@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcorhem"/>LinkedIn</a>.</div>
 `;
 const	file_posts_branchless = `
