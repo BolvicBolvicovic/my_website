@@ -92,12 +92,14 @@ const	dusty_blue = "#7eb3d4";
 const	yellow     = "#f1fa8c";
 const	green      = "#50fa7b";
 const	name_ascii = `
-  _                                 ___                        _   _
- (_|   |_/o                        / (_)                   o  | | | |
-   |   |      __ _|_  __   ,_     |      __   ,_    _  _      | | | |  _
-   |   |  |  /    |  /  \\_/  |    |     /  \\_/  |  / |/ |  |  |/  |/  |/
-    \\_/   |_/\\___/|_/\\__/    |_/   \\___/\\__/    |_/  |  |_/|_/|__/|__/|__/
 
+\`7MMF'   \`7MF'db           mm                         .g8"""bgd               \`7MM                                 
+  \`MA     ,V               MM                       .dP'     \`M                 MM                                 
+   VM:   ,V \`7MM  ,p6"bo mmMMmm ,pW"Wq.\`7Mb,od8     dM'       \` ,pW"Wq.\`7Mb,od8 MMpMMMb.  .gP"Ya \`7MMpMMMb.pMMMb.  
+    MM.  M'   MM 6M'  OO   MM  6W'   \`Wb MM' "'     MM         6W'   \`Wb MM' "' MM    MM ,M'   Yb  MM    MM    MM  
+    \`MM A'    MM 8M        MM  8M     M8 MM         MM.        8M     M8 MM     MM    MM 8M""""""  MM    MM    MM  
+     :MM;     MM YM.    ,  MM  YA.   ,A9 MM         \`Mb.     ,'YA.   ,A9 MM     MM    MM YM.    ,  MM    MM    MM  
+      VF    .JMML.YMbmd'   \`Mbmo\`Ybmd9'.JMML.         \`"bmmmd'  \`Ybmd9'.JMML. .JMML  JMML.\`Mbmmd'.JMML  JMML  JMML.
 
 `;
 
@@ -179,7 +181,7 @@ Right now, I'm focused on understanding the intricacies of IoT by learning how t
 
 <span style="color: ${dusty_blue};">Want to connect?</span>
 Check out my projects in the portfolio folder or on my <a href="https://github.com/BolvicBolvicovic">github</a>.
-You can mail me at victor.cornille@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcornille"/>LinkedIn</a>.</div>
+You can mail me at victor.corhem@gmail.com or message me on <a href="https://www.linkedin.com/in/victorcorhem"/>LinkedIn</a>.</div>
 `;
 const	file_posts_branchless = `
 <h1>Branchless C code</h1>
@@ -335,7 +337,7 @@ median_branchless:
 Perhaps most valuable is the broader lesson: checking the actual assembly output is one of the fastest ways to identify performance bottlenecks that aren't obvious from source code alone.
 
 <div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/branchless">project</a>.
-You can contact me at victor.cornille@gmail.com.</div>
+You can contact me at victor.corhem@gmail.com.</div>
 `;
 
 const	file_portfolio_kfs	= `
@@ -573,7 +575,7 @@ return (unsigned int)(frame * PMM_BLOCK_SIZE);		// Creating the address based on
 <div class="text-block">// TODO</div>
 
 <div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/kfs">project</a>.
-You can contact me at victor.cornille@gmail.com.
+You can contact me at victor.corhem@gmail.com.
 Written by me, typo errors caught by AI.</div>
 `;
 
@@ -600,7 +602,7 @@ Below are a collection of ideas I got by doing that resverse-engineering, classi
 <div class="text-block">// TODO</div>
 
 <div class="text-block">Link to the <a href="https://github.com/BolvicBolvicovic/esp8266_NON_SDK_NON_OS">project</a>.
-You can contact me at victor.cornille@gmail.com.</div>
+You can contact me at victor.corhem@gmail.com.</div>
 `;
 
 const	saved_history		= localStorage.getItem("history");
@@ -693,8 +695,8 @@ function	handle_path_hash() {
  * Return type: string
  * */
 function	build_line_tag() {
-	const	line_tag_start_laptop	= "[victor_cornille@my_website ";
-	const	line_tag_start_mobile	= "[victor@cornille ";
+	const	line_tag_start_laptop	= "[victor_corhem@my_website ";
+	const	line_tag_start_mobile	= "[victor@corhem ";
 	const	line_tag_end		= "]$ ";
 
 	if (is_mobile)

@@ -14,8 +14,7 @@
 .profile-picture {
 	border-radius: 360px;
 	position: absolute;
-	top: 150px;
-	left: 0px;
+	left: 50px;
 	max-width: 250px;
 	max-height: 250px;
 }
@@ -85,29 +84,40 @@ code {
 
 #terminal-output-welcome {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 }
 
 #terminal-output-welcome-message {
+	/*width: 50%;*/
+}
+
+#terminal-output-spans {
 	width: 50%;
+	display: flex;
+	flex-direction: row;
 }
 
 #terminal-image-container {
 	position: relative;
-	width: 50%;
+	/*width: 50%;*/
 }
 
 @media (max-width: 1080px) {
 	.profile-picture {
 		display: none;
 	}
+	
+	#terminal-output-name-ascii {
+		font-size: 12px;
+		transform: translateY(-10px);
+	}
+
 
 	#terminal-output-welcome {
-		flex-direction: column-reverse;
 		white-space: pre-wrap;
 	}
 
-	#terminal-output-welcome-message {
+	#terminal-output-spans {
 		width: 100%;
 	}
 
@@ -121,13 +131,8 @@ code {
 		white-space: pre-wrap;
 	}
 
-	#terminal-output-spans {
-		display: grid;
-		grid-template: 200px 1fr;
-	}
-
 	#terminal-output-name-ascii {
-		font-size: 8px;
+		font-size: 5px;
 		transform: translateY(-10px);
 	}
 
